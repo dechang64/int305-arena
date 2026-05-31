@@ -1,0 +1,1857 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>INT305 ML Arena — 机器学习竞赛教学平台</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<style>
+:root {
+  --bg-primary: #0a0e17;
+  --bg-secondary: #111827;
+  --bg-card: #1a2235;
+  --bg-card-hover: #1f2a40;
+  --bg-elevated: #243049;
+  --accent-blue: #3b82f6;
+  --accent-cyan: #06b6d4;
+  --accent-purple: #8b5cf6;
+  --accent-green: #10b981;
+  --accent-orange: #f59e0b;
+  --accent-red: #ef4444;
+  --accent-pink: #ec4899;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --border: #1e293b;
+  --border-light: #334155;
+  --gradient-1: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  --gradient-2: linear-gradient(135deg, #06b6d4, #3b82f6);
+  --gradient-3: linear-gradient(135deg, #10b981, #06b6d4);
+  --gradient-4: linear-gradient(135deg, #f59e0b, #ef4444);
+  --shadow-glow: 0 0 40px rgba(59, 130, 246, 0.15);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Inter', -apple-system, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* ===== Scrollbar ===== */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
+
+/* ===== Navigation ===== */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+  background: rgba(10, 14, 23, 0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem;
+  height: 64px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+
+.nav-brand {
+  display: flex; align-items: center; gap: 12px;
+  font-weight: 800; font-size: 1.2rem;
+  text-decoration: none; color: var(--text-primary);
+}
+
+.nav-brand .logo-icon {
+  width: 36px; height: 36px;
+  background: var(--gradient-1);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; font-weight: 900;
+}
+
+.nav-links {
+  display: flex; gap: 2rem; list-style: none;
+}
+
+.nav-links a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: color 0.2s;
+  position: relative;
+}
+
+.nav-links a:hover, .nav-links a.active {
+  color: var(--accent-blue);
+}
+
+.nav-links a.active::after {
+  content: '';
+  position: absolute; bottom: -4px; left: 0; right: 0;
+  height: 2px; background: var(--accent-blue); border-radius: 1px;
+}
+
+.nav-actions {
+  display: flex; gap: 12px; align-items: center;
+}
+
+.btn {
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+  text-decoration: none;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-light);
+}
+.btn-ghost:hover { color: var(--text-primary); border-color: var(--text-muted); }
+
+.btn-primary {
+  background: var(--gradient-1);
+  color: white;
+}
+.btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+
+.btn-success {
+  background: var(--accent-green);
+  color: white;
+}
+.btn-success:hover { opacity: 0.9; }
+
+.btn-warning {
+  background: var(--accent-orange);
+  color: white;
+}
+
+.btn-danger {
+  background: var(--accent-red);
+  color: white;
+}
+
+.btn-sm { padding: 5px 12px; font-size: 0.78rem; }
+.btn-lg { padding: 12px 28px; font-size: 1rem; }
+
+/* ===== Hero ===== */
+.hero {
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+  padding: 6rem 2rem 4rem;
+  overflow: hidden;
+}
+
+.hero-bg {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(59, 130, 246, 0.15), transparent),
+    radial-gradient(ellipse 60% 40% at 80% 50%, rgba(139, 92, 246, 0.1), transparent),
+    radial-gradient(ellipse 60% 40% at 20% 80%, rgba(6, 182, 212, 0.08), transparent);
+}
+
+.hero-grid {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(59, 130, 246, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59, 130, 246, 0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black, transparent);
+}
+
+.hero-content {
+  position: relative; z-index: 1;
+  text-align: center; max-width: 900px;
+}
+
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 100px;
+  padding: 6px 18px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--accent-blue);
+  margin-bottom: 2rem;
+}
+
+.hero-badge .pulse {
+  width: 8px; height: 8px;
+  background: var(--accent-green);
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.5); }
+}
+
+.hero h1 {
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-weight: 900;
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
+  letter-spacing: -0.02em;
+}
+
+.hero h1 .gradient-text {
+  background: var(--gradient-1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero p {
+  font-size: 1.15rem;
+  color: var(--text-secondary);
+  max-width: 640px;
+  margin: 0 auto 2.5rem;
+  line-height: 1.7;
+}
+
+.hero-stats {
+  display: flex; justify-content: center; gap: 3rem;
+  margin-top: 3rem;
+}
+
+.hero-stat {
+  text-align: center;
+}
+
+.hero-stat .number {
+  font-size: 2rem;
+  font-weight: 800;
+  background: var(--gradient-2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-stat .label {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.hero-actions {
+  display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;
+}
+
+/* ===== Sections ===== */
+.section {
+  padding: 5rem 2rem;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.section-header .tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent-cyan);
+  margin-bottom: 1rem;
+}
+
+.section-header h2 {
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 1rem;
+}
+
+.section-header p {
+  color: var(--text-secondary);
+  max-width: 600px;
+  margin: 0 auto;
+  font-size: 1.05rem;
+}
+
+/* ===== Competition Cards ===== */
+.competitions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 1.5rem;
+}
+
+.comp-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.8rem;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.comp-card:hover {
+  border-color: var(--border-light);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-glow);
+}
+
+.comp-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: 16px 16px 0 0;
+}
+
+.comp-card[data-status="live"]::before { background: var(--accent-green); }
+.comp-card[data-status="upcoming"]::before { background: var(--accent-orange); }
+.comp-card[data-status="ended"]::before { background: var(--text-muted); }
+
+.comp-card-header {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.comp-week {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.comp-status {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 100px;
+}
+
+.status-live {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--accent-green);
+}
+
+.status-upcoming {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--accent-orange);
+}
+
+.status-ended {
+  background: rgba(100, 116, 139, 0.15);
+  color: var(--text-muted);
+}
+
+.comp-card h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  line-height: 1.3;
+}
+
+.comp-card .desc {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  margin-bottom: 1.2rem;
+  line-height: 1.5;
+}
+
+.comp-meta {
+  display: flex; gap: 1.2rem;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-bottom: 1.2rem;
+}
+
+.comp-meta span {
+  display: flex; align-items: center; gap: 5px;
+}
+
+.comp-tags {
+  display: flex; gap: 6px; flex-wrap: wrap;
+  margin-bottom: 1.2rem;
+}
+
+.comp-tag {
+  font-size: 0.7rem;
+  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: 6px;
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--accent-blue);
+  border: 1px solid rgba(59, 130, 246, 0.15);
+}
+
+.comp-tag.purple {
+  background: rgba(139, 92, 246, 0.1);
+  color: var(--accent-purple);
+  border-color: rgba(139, 92, 246, 0.15);
+}
+
+.comp-tag.cyan {
+  background: rgba(6, 182, 212, 0.1);
+  color: var(--accent-cyan);
+  border-color: rgba(6, 182, 212, 0.15);
+}
+
+.comp-tag.green {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--accent-green);
+  border-color: rgba(16, 185, 129, 0.15);
+}
+
+.comp-footer {
+  display: flex; justify-content: space-between; align-items: center;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.comp-participants {
+  display: flex; align-items: center;
+}
+
+.comp-avatar {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--bg-card);
+  margin-left: -8px;
+  background: var(--bg-elevated);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.6rem; font-weight: 700;
+}
+
+.comp-avatar:first-child { margin-left: 0; }
+
+.comp-more {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-left: 8px;
+}
+
+/* ===== Leaderboard ===== */
+.leaderboard-section {
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 5rem 2rem;
+}
+
+.leaderboard-container {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.leaderboard-tabs {
+  display: flex; gap: 4px;
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 2rem;
+  overflow-x: auto;
+  width: fit-content;
+}
+
+.leaderboard-tab {
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+}
+
+.leaderboard-tab.active {
+  background: var(--accent-blue);
+  color: white;
+}
+
+.leaderboard-tab:hover:not(.active) {
+  color: var(--text-primary);
+  background: var(--bg-elevated);
+}
+
+.leaderboard-table {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.lb-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.lb-table th {
+  text-align: left;
+  padding: 14px 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+  background: rgba(0,0,0,0.2);
+}
+
+.lb-table td {
+  padding: 14px 20px;
+  font-size: 0.88rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.lb-table tr:last-child td { border-bottom: none; }
+
+.lb-table tr:hover td {
+  background: rgba(59, 130, 246, 0.03);
+}
+
+.lb-rank {
+  font-weight: 700;
+  width: 60px;
+}
+
+.lb-rank-1 { color: #fbbf24; }
+.lb-rank-2 { color: #94a3b8; }
+.lb-rank-3 { color: #cd7f32; }
+
+.lb-user {
+  display: flex; align-items: center; gap: 12px;
+}
+
+.lb-avatar {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 0.82rem;
+}
+
+.lb-name { font-weight: 600; }
+.lb-team { font-size: 0.75rem; color: var(--text-muted); }
+
+.lb-score {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  color: var(--accent-cyan);
+}
+
+.lb-bar-cell {
+  width: 200px;
+}
+
+.lb-bar {
+  height: 6px;
+  background: var(--bg-elevated);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.lb-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--gradient-2);
+  transition: width 0.5s ease;
+}
+
+.lb-trend {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 0.78rem; font-weight: 600;
+}
+
+.lb-trend.up { color: var(--accent-green); }
+.lb-trend.down { color: var(--accent-red); }
+.lb-trend.same { color: var(--text-muted); }
+
+/* ===== Syllabus ===== */
+.syallbus-timeline {
+  position: relative;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.timeline-line {
+  position: absolute;
+  left: 28px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--border);
+}
+
+.timeline-item {
+  position: relative;
+  padding-left: 72px;
+  padding-bottom: 2.5rem;
+}
+
+.timeline-dot {
+  position: absolute;
+  left: 20px;
+  top: 6px;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  border: 3px solid var(--accent-blue);
+  background: var(--bg-primary);
+  z-index: 1;
+}
+
+.timeline-item:nth-child(even) .timeline-dot {
+  border-color: var(--accent-purple);
+}
+
+.timeline-item:nth-child(3n) .timeline-dot {
+  border-color: var(--accent-cyan);
+}
+
+.timeline-week {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent-blue);
+  margin-bottom: 0.5rem;
+}
+
+.timeline-content {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.2s;
+}
+
+.timeline-content:hover {
+  border-color: var(--border-light);
+}
+
+.timeline-content h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.timeline-content p {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.8rem;
+}
+
+.timeline-topics {
+  display: flex; gap: 6px; flex-wrap: wrap;
+}
+
+.timeline-topic {
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(59, 130, 246, 0.08);
+  color: var(--accent-blue);
+}
+
+/* ===== Grading Policy ===== */
+.grading-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.grade-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 2rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.grade-card .weight {
+  font-size: 3rem;
+  font-weight: 900;
+  margin-bottom: 0.5rem;
+  line-height: 1;
+}
+
+.grade-card h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.grade-card p {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.grade-card .icon {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  opacity: 0.6;
+}
+
+/* ===== How It Works ===== */
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2rem;
+}
+
+.step-card {
+  text-align: center;
+  position: relative;
+}
+
+.step-number {
+  width: 56px; height: 56px;
+  border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem;
+  font-weight: 800;
+  margin: 0 auto 1.2rem;
+  background: var(--gradient-1);
+  color: white;
+}
+
+.step-card h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.step-card p {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.step-connector {
+  position: absolute;
+  top: 28px;
+  left: calc(50% + 36px);
+  width: calc(100% - 72px);
+  height: 2px;
+  background: var(--border);
+}
+
+/* ===== Submission Panel ===== */
+.submission-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 2rem;
+  margin-top: 2rem;
+}
+
+.submission-panel h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  display: flex; align-items: center; gap: 8px;
+}
+
+.upload-zone {
+  border: 2px dashed var(--border-light);
+  border-radius: 12px;
+  padding: 3rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.upload-zone:hover {
+  border-color: var(--accent-blue);
+  background: rgba(59, 130, 246, 0.03);
+}
+
+.upload-zone i {
+  font-size: 2.5rem;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+
+.upload-zone p {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.upload-zone .format {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 0.5rem;
+}
+
+/* ===== Dashboard ===== */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.dash-stat {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.5rem;
+}
+
+.dash-stat .label {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.dash-stat .value {
+  font-size: 2rem;
+  font-weight: 800;
+}
+
+.dash-stat .change {
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.dash-stat .change.up { color: var(--accent-green); }
+.dash-stat .change.down { color: var(--accent-red); }
+
+/* ===== Footer ===== */
+.footer {
+  border-top: 1px solid var(--border);
+  padding: 3rem 2rem;
+  text-align: center;
+}
+
+.footer p {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+.footer a {
+  color: var(--accent-blue);
+  text-decoration: none;
+}
+
+/* ===== Modal ===== */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(8px);
+  z-index: 2000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.modal-overlay.active { display: flex; }
+
+.modal {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  max-width: 700px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 2.5rem;
+}
+
+.modal-close {
+  float: right;
+  background: none; border: none;
+  color: var(--text-muted);
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.modal h2 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+}
+
+.modal .modal-desc {
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.modal-section {
+  margin-bottom: 1.5rem;
+}
+
+.modal-section h4 {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 0.8rem;
+}
+
+.metric-row {
+  display: flex; justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.88rem;
+}
+
+.metric-row:last-child { border-bottom: none; }
+
+.metric-label { color: var(--text-secondary); }
+.metric-value { font-weight: 600; font-family: 'JetBrains Mono', monospace; }
+
+/* ===== Page Sections (tab-based) ===== */
+.page-section {
+  display: none;
+}
+
+.page-section.active {
+  display: block;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .nav-links { display: none; }
+  .hero-stats { flex-direction: column; gap: 1.5rem; }
+  .competitions-grid { grid-template-columns: 1fr; }
+  .steps-grid { grid-template-columns: 1fr 1fr; }
+  .step-connector { display: none; }
+  .dashboard-grid { grid-template-columns: 1fr; }
+  .grading-grid { grid-template-columns: 1fr 1fr; }
+  .lb-bar-cell { display: none; }
+}
+
+/* ===== Animations ===== */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-in {
+  animation: fadeInUp 0.6s ease forwards;
+}
+
+/* ===== Floating particles ===== */
+.particles {
+  position: absolute; inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.particle {
+  position: absolute;
+  width: 4px; height: 4px;
+  background: var(--accent-blue);
+  border-radius: 50%;
+  opacity: 0.3;
+  animation: float linear infinite;
+}
+
+@keyframes float {
+  0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+  10% { opacity: 0.3; }
+  90% { opacity: 0.3; }
+  100% { transform: translateY(-10vh) rotate(720deg); opacity: 0; }
+}
+
+/* ===== Competition Detail Page ===== */
+.comp-detail-header {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  padding: 6rem 2rem 3rem;
+}
+
+.comp-detail-header .inner {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.comp-detail-nav {
+  display: flex; gap: 1px;
+  margin-top: 2rem;
+  background: var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  width: fit-content;
+}
+
+.comp-detail-tab {
+  padding: 10px 22px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  border: none;
+  transition: all 0.2s;
+}
+
+.comp-detail-tab.active {
+  background: var(--accent-blue);
+  color: white;
+}
+
+.comp-detail-tab:hover:not(.active) {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+/* ===== Countdown ===== */
+.countdown {
+  display: flex; gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.countdown-item {
+  text-align: center;
+  background: rgba(0,0,0,0.3);
+  border-radius: 10px;
+  padding: 12px 16px;
+  min-width: 70px;
+}
+
+.countdown-item .num {
+  font-size: 1.5rem;
+  font-weight: 800;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--accent-cyan);
+}
+
+.countdown-item .unit {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ===== Code Block ===== */
+.code-block {
+  background: rgba(0,0,0,0.4);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.2rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82rem;
+  line-height: 1.7;
+  overflow-x: auto;
+  color: var(--text-secondary);
+  margin: 1rem 0;
+}
+
+.code-block .keyword { color: var(--accent-purple); }
+.code-block .string { color: var(--accent-green); }
+.code-block .comment { color: var(--text-muted); }
+.code-block .func { color: var(--accent-cyan); }
+.code-block .num { color: var(--accent-orange); }
+
+/* ===== Progress Bar ===== */
+.progress-bar {
+  height: 8px;
+  background: var(--bg-elevated);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+/* ===== Notification Badge ===== */
+.notif-badge {
+  position: relative;
+}
+
+.notif-badge::after {
+  content: '3';
+  position: absolute;
+  top: -4px; right: -4px;
+  width: 16px; height: 16px;
+  background: var(--accent-red);
+  border-radius: 50%;
+  font-size: 0.6rem;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  color: white;
+}
+</style>
+</head>
+<body>
+
+<!-- ===== Navigation ===== -->
+<nav class="nav">
+  <a href="#" class="nav-brand" onclick="showPage('home')">
+    <div class="logo-icon"><i class="fas fa-brain"></i></div>
+    <span>INT305 <span style="color:var(--accent-cyan)">Arena</span></span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#" class="active" onclick="showPage('home')" data-page="home">首页</a></li>
+    <li><a href="#" onclick="showPage('competitions')" data-page="competitions">竞赛</a></li>
+    <li><a href="#" onclick="showPage('leaderboard')" data-page="leaderboard">排行榜</a></li>
+    <li><a href="#" onclick="showPage('syllabus')" data-page="syllabus">课程大纲</a></li>
+    <li><a href="#" onclick="showPage('grading')" data-page="grading">评分规则</a></li>
+  </ul>
+  <div class="nav-actions">
+    <button class="btn btn-ghost btn-sm notif-badge"><i class="fas fa-bell"></i></button>
+    <button class="btn btn-primary btn-sm" onclick="showLoginModal()"><i class="fas fa-sign-in-alt"></i> 登录</button>
+  </div>
+</nav>
+
+<!-- ===== HOME PAGE ===== -->
+<div id="page-home" class="page-section active">
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-grid"></div>
+    <div class="particles" id="particles"></div>
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="pulse"></span>
+        2026 秋季学期 · 正在报名
+      </div>
+      <h1>
+        以赛促学<br>
+        <span class="gradient-text">机器学习实战竞技场</span>
+      </h1>
+      <p>
+        INT305 Machine Learning — 不再是传统的作业与考试，而是 6 场 Kaggle 式竞赛。
+        每一场竞赛对应课程核心模块，用真实数据集和实时排行榜驱动你的学习。
+      </p>
+      <div class="hero-actions">
+        <button class="btn btn-primary btn-lg" onclick="showPage('competitions')">
+          <i class="fas fa-trophy"></i> 浏览竞赛
+        </button>
+        <button class="btn btn-ghost btn-lg" onclick="showPage('grading')">
+          <i class="fas fa-chart-bar"></i> 评分规则
+        </button>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <div class="number">6</div>
+          <div class="label">实战竞赛</div>
+        </div>
+        <div class="hero-stat">
+          <div class="number">12</div>
+          <div class="label">课程讲次</div>
+        </div>
+        <div class="hero-stat">
+          <div class="number">100%</div>
+          <div class="label">竞赛驱动考核</div>
+        </div>
+        <div class="hero-stat">
+          <div class="number">实时</div>
+          <div class="label">排行榜更新</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section class="section">
+    <div class="section-header">
+      <div class="tag"><i class="fas fa-bolt"></i> 运作方式</div>
+      <h2>竞赛驱动的学习闭环</h2>
+      <p>每一轮竞赛都是一个完整的学习周期：学理论 → 写代码 → 提交结果 → 看排名 → 迭代优化</p>
+    </div>
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-number">1</div>
+        <div class="step-connector"></div>
+        <h3>学习理论</h3>
+        <p>课堂讲授核心算法原理，配合代码示例理解实现细节</p>
+      </div>
+      <div class="step-card">
+        <div class="step-number">2</div>
+        <div class="step-connector"></div>
+        <h3>下载数据</h3>
+        <p>获取竞赛数据集和基线代码，理解任务目标和评估指标</p>
+      </div>
+      <div class="step-card">
+        <div class="step-number">3</div>
+        <div class="step-connector"></div>
+        <h3>提交结果</h3>
+        <p>上传预测文件，系统自动评分，排行榜实时更新</p>
+      </div>
+      <div class="step-card">
+        <div class="step-number">4</div>
+        <h3>迭代冲榜</h3>
+        <p>根据反馈优化模型，多次提交提升排名，争夺冠军</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured Competitions -->
+  <section class="section">
+    <div class="section-header">
+      <div class="tag"><i class="fas fa-fire"></i> 本学期竞赛</div>
+      <h2>六大实战竞赛</h2>
+      <p>每场竞赛对应课程核心模块，从回归到强化学习全覆盖</p>
+    </div>
+    <div class="competitions-grid" id="competitions-grid-home">
+      <!-- Filled by JS -->
+    </div>
+  </section>
+
+</div>
+
+<!-- ===== COMPETITIONS PAGE ===== -->
+<div id="page-competitions" class="page-section">
+  <div style="padding-top: 80px;">
+    <section class="section">
+      <div class="section-header">
+        <div class="tag"><i class="fas fa-trophy"></i> 竞赛中心</div>
+        <h2>所有竞赛</h2>
+        <p>选择一场竞赛，下载数据，提交结果，冲击排行榜</p>
+      </div>
+      <div style="display:flex; gap:8px; margin-bottom:2rem; flex-wrap:wrap;">
+        <button class="btn btn-sm" style="background:var(--accent-blue);color:white;" onclick="filterComps('all')">全部</button>
+        <button class="btn btn-ghost btn-sm" onclick="filterComps('live')">进行中</button>
+        <button class="btn btn-ghost btn-sm" onclick="filterComps('upcoming')">即将开始</button>
+        <button class="btn btn-ghost btn-sm" onclick="filterComps('ended')">已结束</button>
+      </div>
+      <div class="competitions-grid" id="competitions-grid-all">
+        <!-- Filled by JS -->
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- ===== LEADERBOARD PAGE ===== -->
+<div id="page-leaderboard" class="page-section">
+  <div class="leaderboard-section" style="padding-top: 100px;">
+    <div class="leaderboard-container">
+      <div class="section-header" style="text-align:left; margin-bottom:2rem;">
+        <div class="tag"><i class="fas fa-ranking-star"></i> 排行榜</div>
+        <h2>实时排名</h2>
+      </div>
+      <div class="leaderboard-tabs" id="lb-tabs">
+        <!-- Filled by JS -->
+      </div>
+      <div class="leaderboard-table">
+        <table class="lb-table">
+          <thead>
+            <tr>
+              <th>排名</th>
+              <th>选手</th>
+              <th>分数</th>
+              <th>进度</th>
+              <th>提交次数</th>
+              <th>趋势</th>
+            </tr>
+          </thead>
+          <tbody id="lb-body">
+            <!-- Filled by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SYLLABUS PAGE ===== -->
+<div id="page-syllabus" class="page-section">
+  <div style="padding-top: 100px;">
+    <section class="section">
+      <div class="section-header">
+        <div class="tag"><i class="fas fa-book-open"></i> 课程大纲</div>
+        <h2>INT305 Machine Learning</h2>
+        <p>12 讲覆盖机器学习核心算法，6 场竞赛贯穿始终</p>
+      </div>
+      <div class="syallbus-timeline" id="syllabus-timeline">
+        <!-- Filled by JS -->
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- ===== GRADING PAGE ===== -->
+<div id="page-grading" class="page-section">
+  <div style="padding-top: 100px;">
+    <section class="section">
+      <div class="section-header">
+        <div class="tag"><i class="fas fa-scale-balanced"></i> 评分规则</div>
+        <h2>竞赛驱动考核体系</h2>
+        <p>100% 基于竞赛表现评分，告别传统考试</p>
+      </div>
+
+      <div class="grading-grid">
+        <div class="grade-card">
+          <div class="icon">🏆</div>
+          <div class="weight" style="color:var(--accent-blue)">60%</div>
+          <h3>竞赛排名分</h3>
+          <p>6 场竞赛的排名成绩加权平均。排名越高，得分越高。采用归一化公式确保公平。</p>
+        </div>
+        <div class="grade-card">
+          <div class="icon">📈</div>
+          <div class="weight" style="color:var(--accent-green)">20%</div>
+          <h3>进步奖励分</h3>
+          <p>奖励持续进步的同学。从首次提交到最终成绩的提升幅度越大，奖励越多。</p>
+        </div>
+        <div class="grade-card">
+          <div class="icon">📝</div>
+          <div class="weight" style="color:var(--accent-purple)">15%</div>
+          <h3>代码报告分</h3>
+          <p>每场竞赛提交代码和简要报告，说明方法、思路和实验过程。注重可复现性。</p>
+        </div>
+        <div class="grade-card">
+          <div class="icon">🤝</div>
+          <div class="weight" style="color:var(--accent-orange)">5%</div>
+          <h3>社区贡献分</h3>
+          <p>在讨论区回答问题、分享思路、帮助同学。活跃的社区参与获得额外加分。</p>
+        </div>
+      </div>
+
+      <div style="margin-top: 3rem; max-width: 800px; margin-left: auto; margin-right: auto;">
+        <h3 style="font-size:1.2rem; font-weight:700; margin-bottom:1.5rem; text-align:center;">排名分计算公式</h3>
+        <div class="code-block">
+<span class="comment"># 每场竞赛的排名分 (Rank Score)</span>
+<span class="keyword">def</span> <span class="func">rank_score</span>(rank, total_participants):
+    <span class="string">"""归一化排名分：第1名得满分，最后一名得保底分"""</span>
+    <span class="keyword">if</span> total_participants <= <span class="num">1</span>:
+        <span class="keyword">return</span> <span class="num">100</span>
+    normalized = <span class="num">1</span> - (rank - <span class="num">1</span>) / (total_participants - <span class="num">1</span>)
+    <span class="keyword">return</span> <span class="num">40</span> + normalized * <span class="num">60</span>  <span class="comment"># 保底40分，满分100分</span>
+
+<span class="comment"># 最终成绩 = 加权平均</span>
+<span class="keyword">def</span> <span class="func">final_grade</span>(comp_scores, improvement, report, community):
+    <span class="string">"""
+    comp_scores: 6场竞赛排名分的列表
+    improvement: 进步奖励分 (0-100)
+    report: 代码报告分 (0-100)
+    community: 社区贡献分 (0-100)
+    """</span>
+    avg_rank = <span class="func">sum</span>(comp_scores) / <span class="func">len</span>(comp_scores)
+    <span class="keyword">return</span> (avg_rank * <span class="num">0.60</span> +
+            improvement * <span class="num">0.20</span> +
+            report * <span class="num">0.15</span> +
+            community * <span class="num">0.05</span>)
+        </div>
+
+        <div style="margin-top: 2rem; background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:1.5rem;">
+          <h4 style="font-size:0.9rem; font-weight:700; margin-bottom:1rem;"><i class="fas fa-lightbulb" style="color:var(--accent-orange);"></i> 关键设计原则</h4>
+          <ul style="list-style:none; font-size:0.88rem; color:var(--text-secondary); line-height:2;">
+            <li><i class="fas fa-check" style="color:var(--accent-green); margin-right:8px;"></i> <strong>保底分机制</strong>：即使排名靠后也能获得40%的基础分，避免零分焦虑</li>
+            <li><i class="fas fa-check" style="color:var(--accent-green); margin-right:8px;"></i> <strong>进步奖励</strong>：鼓励持续迭代，而非一次定胜负</li>
+            <li><i class="fas fa-check" style="color:var(--accent-green); margin-right:8px;"></i> <strong>代码审查</strong>：防止刷分作弊，确保真正理解算法</li>
+            <li><i class="fas fa-check" style="color:var(--accent-green); margin-right:8px;"></i> <strong>每日提交上限</strong>：每场竞赛每天最多提交3次，防止穷举搜索</li>
+            <li><i class="fas fa-check" style="color:var(--accent-green); margin-right:8px;"></i> <strong>公开排行榜 + 隐藏测试集</strong>：排行榜基于公开测试集，最终评分基于隐藏测试集</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- ===== Competition Detail Modal ===== -->
+<div class="modal-overlay" id="comp-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+    <div id="modal-content">
+      <!-- Filled by JS -->
+    </div>
+  </div>
+</div>
+
+<!-- ===== Login Modal ===== -->
+<div class="modal-overlay" id="login-modal">
+  <div class="modal" style="max-width:420px;">
+    <button class="modal-close" onclick="document.getElementById('login-modal').classList.remove('active')"><i class="fas fa-times"></i></button>
+    <h2 style="margin-bottom:0.5rem;">欢迎回来</h2>
+    <p style="color:var(--text-secondary); font-size:0.9rem; margin-bottom:2rem;">登录 INT305 Arena 参与竞赛</p>
+    <div style="margin-bottom:1.2rem;">
+      <label style="font-size:0.82rem; font-weight:600; display:block; margin-bottom:6px;">学号 / 邮箱</label>
+      <input type="text" placeholder="your.name@student.xjtlu.edu.cn" style="width:100%; padding:10px 14px; background:var(--bg-elevated); border:1px solid var(--border); border-radius:8px; color:var(--text-primary); font-size:0.9rem; outline:none;">
+    </div>
+    <div style="margin-bottom:1.5rem;">
+      <label style="font-size:0.82rem; font-weight:600; display:block; margin-bottom:6px;">密码</label>
+      <input type="password" placeholder="••••••••" style="width:100%; padding:10px 14px; background:var(--bg-elevated); border:1px solid var(--border); border-radius:8px; color:var(--text-primary); font-size:0.9rem; outline:none;">
+    </div>
+    <button class="btn btn-primary" style="width:100%; justify-content:center; padding:12px;">登录</button>
+    <p style="text-align:center; margin-top:1rem; font-size:0.82rem; color:var(--text-muted);">
+      首次使用？请联系助教开通账号
+    </p>
+  </div>
+</div>
+
+<script>
+// ===== Data =====
+const competitions = [
+  {
+    id: 'comp1',
+    title: '房价预测挑战赛',
+    subtitle: 'House Price Prediction',
+    week: 'Week 1-2',
+    lectures: 'Lecture 1-2',
+    status: 'live',
+    desc: '使用线性回归和优化算法预测房屋价格。从特征工程到正则化，掌握回归分析的核心技能。',
+    metric: 'RMSE',
+    dataset: 'Ames Housing Dataset',
+    participants: 87,
+    deadline: '2026-10-15',
+    maxSubmissions: 3,
+    tags: [
+      { text: '线性回归', color: '' },
+      { text: '梯度下降', color: 'cyan' },
+      { text: '正则化', color: 'purple' }
+    ],
+    detail: '基于 Ames Housing 数据集，包含 79 个特征变量描述爱荷华州 Ames 市的住宅。你需要预测房屋的最终售价（SalePrice）。评估指标为 RMSE（对数价格）。这是一个经典的回归问题，适合入门机器学习竞赛。',
+    baseline: 0.145,
+    topScore: 0.108,
+    files: ['train.csv', 'test.csv', 'sample_submission.csv', 'baseline.py']
+  },
+  {
+    id: 'comp2',
+    title: '图像分类对抗赛',
+    subtitle: 'Image Classification Battle',
+    week: 'Week 3-4',
+    lectures: 'Lecture 3-4',
+    status: 'upcoming',
+    desc: '用 SVM 和 Softmax 分类器识别手写数字和服装图像。探索不同核函数和损失函数的效果。',
+    metric: 'Accuracy',
+    dataset: 'Fashion-MNIST + Digit-MNIST',
+    participants: 0,
+    deadline: '2026-10-29',
+    maxSubmissions: 3,
+    tags: [
+      { text: 'SVM', color: '' },
+      { text: 'Softmax', color: 'cyan' },
+      { text: '多分类', color: 'green' }
+    ],
+    detail: '双数据集挑战：在 Fashion-MNIST 和 Digit-MNIST 上分别训练分类器。最终分数为两个数据集准确率的加权平均。限制条件：只能使用 SVM 或 Softmax（线性分类器），不得使用神经网络。',
+    baseline: 0.847,
+    topScore: null,
+    files: ['train_images.npy', 'train_labels.npy', 'test_images.npy', 'baseline_svm.py']
+  },
+  {
+    id: 'comp3',
+    title: 'CIFAR-10 挑战赛',
+    subtitle: 'CIFAR-10 Classification',
+    week: 'Week 5-6',
+    lectures: 'Lecture 5-6',
+    status: 'upcoming',
+    desc: '构建卷积神经网络对 CIFAR-10 图像进行分类。从 LeNet 到 ResNet，探索深度学习的力量。',
+    metric: 'Accuracy',
+    dataset: 'CIFAR-10',
+    participants: 0,
+    deadline: '2026-11-12',
+    maxSubmissions: 5,
+    tags: [
+      { text: 'CNN', color: '' },
+      { text: '反向传播', color: 'purple' },
+      { text: '深度学习', color: 'cyan' }
+    ],
+    detail: '在 CIFAR-10 数据集上构建图像分类器。10 个类别，每类 6000 张 32x32 彩色图像。鼓励尝试不同的网络架构（LeNet, VGG, ResNet 等）、数据增强策略和优化器。排行榜实时更新，最终评估使用隐藏测试集。',
+    baseline: 0.65,
+    topScore: null,
+    files: ['cifar10_train.zip', 'cifar10_test.zip', 'baseline_cnn.py', 'data_utils.py']
+  },
+  {
+    id: 'comp4',
+    title: '集成学习擂台赛',
+    subtitle: 'Ensemble Learning Arena',
+    week: 'Week 7-8',
+    lectures: 'Lecture 7-8',
+    status: 'upcoming',
+    desc: '用决策树、Bagging 和 Boosting 构建强大的集成模型。在表格数据上比拼特征工程和模型融合技巧。',
+    metric: 'AUC-ROC',
+    dataset: 'Customer Churn Dataset',
+    participants: 0,
+    deadline: '2026-11-26',
+    maxSubmissions: 5,
+    tags: [
+      { text: '决策树', color: '' },
+      { text: 'Random Forest', color: 'green' },
+      { text: 'XGBoost', color: 'purple' }
+    ],
+    detail: '预测客户流失（Customer Churn）。数据集包含客户行为特征、消费记录和服务使用情况。你需要使用决策树和集成方法（Bagging, Boosting）构建预测模型。鼓励尝试不同的基学习器和集成策略。评估指标为 AUC-ROC。',
+    baseline: 0.82,
+    topScore: null,
+    files: ['churn_train.csv', 'churn_test.csv', 'baseline_tree.py']
+  },
+  {
+    id: 'comp5',
+    title: '文本分类 & 聚类赛',
+    subtitle: 'Text Classification & Clustering',
+    week: 'Week 9-10',
+    lectures: 'Lecture 9-10',
+    status: 'upcoming',
+    desc: '用朴素贝叶斯分类文本，用 k-Means 和 EM 发现隐藏模式。概率模型与无监督学习的双重挑战。',
+    metric: 'F1-Score + NMI',
+    dataset: 'News Articles + Customer Profiles',
+    participants: 0,
+    deadline: '2026-12-10',
+    maxSubmissions: 5,
+    tags: [
+      { text: '朴素贝叶斯', color: '' },
+      { text: 'k-Means', color: 'cyan' },
+      { text: 'EM算法', color: 'purple' }
+    ],
+    detail: '双任务竞赛：任务一用朴素贝叶斯对新闻文章分类（F1-Score 评估）；任务二用 k-Means/EM 对客户画像聚类（NMI 评估）。最终分数 = 0.6 × 分类F1 + 0.4 × 聚类NMI。这是概率模型与无监督学习的综合考验。',
+    baseline: 0.78,
+    topScore: null,
+    files: ['news_train.csv', 'news_test.csv', 'customer_features.csv', 'baseline_nb.py']
+  },
+  {
+    id: 'comp6',
+    title: '序列预测 & 强化学习赛',
+    subtitle: 'Sequence & RL Challenge',
+    week: 'Week 11-12',
+    lectures: 'Lecture 11-12',
+    status: 'upcoming',
+    desc: '用 RNN 预测时间序列，用强化学习训练游戏智能体。课程终极挑战，展示你的全部实力。',
+    metric: 'MAE + Game Score',
+    dataset: 'Stock Price + CartPole-v1',
+    participants: 0,
+    deadline: '2026-12-24',
+    maxSubmissions: 10,
+    tags: [
+      { text: 'RNN/LSTM', color: '' },
+      { text: '强化学习', color: 'green' },
+      { text: 'DQN', color: 'purple' }
+    ],
+    detail: '期末终极双任务：任务一用 RNN/LSTM 预测股价走势（MAE 评估）；任务二用 RL 算法训练 CartPole 智能体（平均奖励评估）。最终分数 = 0.5 × 序列分 + 0.5 × RL分。这是对整个学期学习成果的终极检验！',
+    baseline: 0.55,
+    topScore: null,
+    files: ['stock_train.csv', 'stock_test.csv', 'rl_env.py', 'baseline_rnn.py', 'baseline_dqn.py']
+  }
+];
+
+const lectures = [
+  { week: 'Week 1', lecture: 'Lecture 1', title: '机器学习导论', instructor: 'Jimin Xiao', topics: ['ML定义与范畴', '监督/无监督/强化学习', '过拟合与泛化', '模型选择'], comp: 'comp1' },
+  { week: 'Week 1', lecture: 'Lecture 2', title: '线性回归与优化', instructor: 'Jimin Xiao', topics: ['线性回归', '梯度下降', '正规方程', '正则化 (Ridge/Lasso)'], comp: 'comp1' },
+  { week: 'Week 2', lecture: 'Lecture 3', title: '线性分类器与逻辑回归', instructor: 'Jimin Xiao', topics: ['线性分类器', '逻辑回归', '多分类策略', 'One-vs-All'], comp: 'comp2' },
+  { week: 'Week 2', lecture: 'Lecture 4', title: '支持向量机', instructor: 'Jimin Xiao', topics: ['最大间隔', 'SVM优化', '核方法', 'Softmax Loss'], comp: 'comp2' },
+  { week: 'Week 3', lecture: 'Lecture 5', title: '神经网络与反向传播', instructor: 'Jimin Xiao', topics: ['计算图', '前向传播', '反向传播', '激活函数'], comp: 'comp3' },
+  { week: 'Week 3', lecture: 'Lecture 6', title: '卷积神经网络', instructor: 'Jimin Xiao', topics: ['卷积层', '池化层', '经典架构', 'Batch Normalization'], comp: 'comp3' },
+  { week: 'Week 4', lecture: 'Lecture 7', title: '决策树与偏差-方差分解', instructor: 'Siyue Yu', topics: ['决策树学习', '信息增益', '剪枝', '偏差-方差权衡'], comp: 'comp4' },
+  { week: 'Week 4', lecture: 'Lecture 8', title: 'Bagging 与 Boosting', instructor: 'Siyue Yu', topics: ['Bagging', '随机森林', 'AdaBoost', 'Gradient Boosting'], comp: 'comp4' },
+  { week: 'Week 5', lecture: 'Lecture 9', title: '概率模型', instructor: 'Siyue Yu', topics: ['朴素贝叶斯', '贝叶斯推断', '最大似然估计', 'MAP'], comp: 'comp5' },
+  { week: 'Week 5', lecture: 'Lecture 10', title: 'k-Means 与 EM 算法', instructor: 'Siyue Yu', topics: ['k-Means', 'EM算法', '高斯混合模型', '聚类评估'], comp: 'comp5' },
+  { week: 'Week 6', lecture: 'Lecture 11', title: '循环神经网络', instructor: 'Jimin Xiao', topics: ['RNN结构', 'LSTM/GRU', '序列建模', '时间序列预测'], comp: 'comp6' },
+  { week: 'Week 6', lecture: 'Lecture 12', title: '强化学习', instructor: 'Jimin Xiao', topics: ['MDP', 'Q-Learning', '策略梯度', 'DQN'], comp: 'comp6' }
+];
+
+// Mock leaderboard data
+const mockUsers = [
+  { name: '张明远', team: 'DeepThinkers', color: '#3b82f6' },
+  { name: '李思涵', team: 'MLWarriors', color: '#8b5cf6' },
+  { name: '王浩然', team: 'GradientGang', color: '#06b6d4' },
+  { name: '陈雨萱', team: 'NeuralNinjas', color: '#10b981' },
+  { name: '刘子轩', team: 'Solo', color: '#f59e0b' },
+  { name: '赵思琪', team: 'DataMiners', color: '#ec4899' },
+  { name: '孙博文', team: 'DeepThinkers', color: '#ef4444' },
+  { name: '周雅婷', team: 'MLWarriors', color: '#6366f1' },
+  { name: '吴天宇', team: 'Solo', color: '#14b8a6' },
+  { name: '郑晓萌', team: 'GradientGang', color: '#f97316' },
+  { name: '黄嘉豪', team: 'NeuralNinjas', color: '#a855f7' },
+  { name: '林思颖', team: 'DataMiners', color: '#0ea5e9' },
+];
+
+function generateLeaderboard(compId) {
+  const scores = [];
+  const count = mockUsers.length;
+  for (let i = 0; i < count; i++) {
+    const baseScore = 0.95 - (i * 0.03) + (Math.random() * 0.02 - 0.01);
+    scores.push({
+      ...mockUsers[i],
+      score: Math.max(0.5, baseScore).toFixed(4),
+      submissions: Math.floor(Math.random() * 15) + 3,
+      trend: i < 3 ? 'up' : (i > 8 ? 'down' : 'same'),
+      trendVal: i < 3 ? `+${Math.floor(Math.random()*3)+1}` : (i > 8 ? `-${Math.floor(Math.random()*3)+1}` : '—')
+    });
+  }
+  return scores.sort((a, b) => parseFloat(b.score) - parseFloat(a.score));
+}
+
+// ===== Render Functions =====
+
+function renderCompCard(comp) {
+  const statusMap = { live: '进行中', upcoming: '即将开始', ended: '已结束' };
+  const statusClass = `status-${comp.status}`;
+  const avatars = comp.participants > 0 ?
+    Array.from({length: Math.min(4, comp.participants)}, (_, i) =>
+      `<div class="comp-avatar" style="background:${mockUsers[i % mockUsers.length].color}">${mockUsers[i % mockUsers.length].name[0]}</div>`
+    ).join('') + (comp.participants > 4 ? `<span class="comp-more">+${comp.participants - 4}</span>` : '')
+    : '<span style="font-size:0.78rem;color:var(--text-muted);">尚未开始</span>';
+
+  return `
+    <div class="comp-card" data-status="${comp.status}" onclick="showCompDetail('${comp.id}')">
+      <div class="comp-card-header">
+        <span class="comp-week">${comp.week} · ${comp.lectures}</span>
+        <span class="comp-status ${statusClass}">${statusMap[comp.status]}</span>
+      </div>
+      <h3>${comp.title}</h3>
+      <p class="desc">${comp.desc}</p>
+      <div class="comp-tags">
+        ${comp.tags.map(t => `<span class="comp-tag ${t.color}">${t.text}</span>`).join('')}
+      </div>
+      <div class="comp-meta">
+        <span><i class="fas fa-chart-line"></i> ${comp.metric}</span>
+        <span><i class="fas fa-database"></i> ${comp.dataset.split(' + ')[0].split(' ')[0]}</span>
+        <span><i class="fas fa-calendar"></i> ${comp.deadline}</span>
+      </div>
+      <div class="comp-footer">
+        <div class="comp-participants">${avatars}</div>
+        <button class="btn btn-sm ${comp.status === 'live' ? 'btn-success' : 'btn-ghost'}">
+          ${comp.status === 'live' ? '参加竞赛' : '查看详情'}
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function renderLeaderboard(compId) {
+  const data = generateLeaderboard(compId);
+  const maxScore = parseFloat(data[0].score);
+  const tbody = document.getElementById('lb-body');
+  tbody.innerHTML = data.map((u, i) => {
+    const rank = i + 1;
+    const rankClass = rank <= 3 ? `lb-rank-${rank}` : '';
+    const barWidth = (parseFloat(u.score) / maxScore * 100).toFixed(1);
+    return `
+      <tr>
+        <td class="lb-rank ${rankClass}">${rank <= 3 ? ['🥇','🥈','🥉'][rank-1] : rank}</td>
+        <td>
+          <div class="lb-user">
+            <div class="lb-avatar" style="background:${u.color}">${u.name[0]}</div>
+            <div>
+              <div class="lb-name">${u.name}</div>
+              <div class="lb-team">${u.team}</div>
+            </div>
+          </div>
+        </td>
+        <td class="lb-score">${u.score}</td>
+        <td class="lb-bar-cell">
+          <div class="lb-bar">
+            <div class="lb-bar-fill" style="width:${barWidth}%"></div>
+          </div>
+        </td>
+        <td style="color:var(--text-muted); font-size:0.82rem;">${u.submissions}</td>
+        <td>
+          <span class="lb-trend ${u.trend}">
+            <i class="fas fa-${u.trend === 'up' ? 'arrow-up' : u.trend === 'down' ? 'arrow-down' : 'minus'}"></i>
+            ${u.trendVal}
+          </span>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function renderSyllabus() {
+  const container = document.getElementById('syllabus-timeline');
+  container.innerHTML = lectures.map(l => `
+    <div class="timeline-item">
+      <div class="timeline-dot"></div>
+      <div class="timeline-week">${l.week} · ${l.lecture}</div>
+      <div class="timeline-content">
+        <h3>${l.title}</h3>
+        <p>讲师：${l.instructor} · 关联竞赛：${competitions.find(c => c.id === l.comp)?.title || ''}</p>
+        <div class="timeline-topics">
+          ${l.topics.map(t => `<span class="timeline-topic">${t}</span>`).join('')}
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function showCompDetail(compId) {
+  const comp = competitions.find(c => c.id === compId);
+  if (!comp) return;
+
+  const statusMap = { live: '进行中', upcoming: '即将开始', ended: '已结束' };
+  const modal = document.getElementById('comp-modal');
+  const content = document.getElementById('modal-content');
+
+  content.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1.5rem;">
+      <div>
+        <span class="comp-status status-${comp.status}" style="margin-bottom:8px; display:inline-block;">${statusMap[comp.status]}</span>
+        <h2 style="margin-top:8px;">${comp.title}</h2>
+        <p style="color:var(--text-muted); font-size:0.88rem;">${comp.subtitle} · ${comp.week}</p>
+      </div>
+    </div>
+
+    <p class="modal-desc">${comp.detail}</p>
+
+    <div class="modal-section">
+      <h4>竞赛信息</h4>
+      <div class="metric-row">
+        <span class="metric-label">评估指标</span>
+        <span class="metric-value">${comp.metric}</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">数据集</span>
+        <span class="metric-value">${comp.dataset}</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">截止时间</span>
+        <span class="metric-value">${comp.deadline}</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">每日提交上限</span>
+        <span class="metric-value">${comp.maxSubmissions} 次</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">基线分数</span>
+        <span class="metric-value">${comp.baseline}</span>
+      </div>
+      ${comp.topScore ? `<div class="metric-row">
+        <span class="metric-label">当前最佳</span>
+        <span class="metric-value" style="color:var(--accent-green)">${comp.topScore}</span>
+      </div>` : ''}
+    </div>
+
+    <div class="modal-section">
+      <h4>竞赛文件</h4>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        ${comp.files.map(f => `
+          <div style="display:flex; align-items:center; gap:6px; padding:8px 14px; background:var(--bg-elevated); border-radius:8px; font-size:0.82rem; cursor:pointer;" onclick="alert('下载功能需要登录后使用')">
+            <i class="fas fa-file-${f.endsWith('.py') ? 'code' : 'csv'}" style="color:${f.endsWith('.py') ? 'var(--accent-cyan)' : 'var(--accent-green)'}"></i>
+            ${f}
+            <i class="fas fa-download" style="color:var(--text-muted); font-size:0.7rem;"></i>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="modal-section">
+      <h4>提交预测结果</h4>
+      <div class="upload-zone" onclick="alert('提交功能需要登录后使用')">
+        <i class="fas fa-cloud-upload-alt"></i>
+        <p>拖拽文件到此处或点击上传</p>
+        <p class="format">支持格式：.csv, .npy, .json · 最大 50MB</p>
+      </div>
+    </div>
+
+    <div style="display:flex; gap:12px; margin-top:1.5rem;">
+      <button class="btn btn-primary" onclick="alert('需要登录后才能参加竞赛')"><i class="fas fa-play"></i> 参加竞赛</button>
+      <button class="btn btn-ghost" onclick="closeModal()">关闭</button>
+    </div>
+  `;
+
+  modal.classList.add('active');
+}
+
+function closeModal() {
+  document.getElementById('comp-modal').classList.remove('active');
+}
+
+function showLoginModal() {
+  document.getElementById('login-modal').classList.add('active');
+}
+
+// ===== Page Navigation =====
+function showPage(page) {
+  document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
+  document.getElementById(`page-${page}`).classList.add('active');
+
+  document.querySelectorAll('.nav-links a').forEach(a => {
+    a.classList.toggle('active', a.dataset.page === page);
+  });
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function filterComps(status) {
+  const grid = document.getElementById('competitions-grid-all');
+  const filtered = status === 'all' ? competitions : competitions.filter(c => c.status === status);
+  grid.innerHTML = filtered.map(renderCompCard).join('');
+
+  // Update filter buttons
+  event.target.parentElement.querySelectorAll('.btn').forEach(btn => {
+    btn.className = 'btn btn-ghost btn-sm';
+  });
+  event.target.className = 'btn btn-sm';
+  event.target.style.background = 'var(--accent-blue)';
+  event.target.style.color = 'white';
+}
+
+// ===== Particles =====
+function createParticles() {
+  const container = document.getElementById('particles');
+  for (let i = 0; i < 30; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.animationDuration = (Math.random() * 15 + 10) + 's';
+    p.style.animationDelay = (Math.random() * 10) + 's';
+    p.style.width = p.style.height = (Math.random() * 3 + 2) + 'px';
+    const colors = ['var(--accent-blue)', 'var(--accent-cyan)', 'var(--accent-purple)'];
+    p.style.background = colors[Math.floor(Math.random() * colors.length)];
+    container.appendChild(p);
+  }
+}
+
+// ===== Leaderboard Tabs =====
+function renderLbTabs() {
+  const tabs = document.getElementById('lb-tabs');
+  tabs.innerHTML = competitions.map((c, i) =>
+    `<button class="leaderboard-tab ${i === 0 ? 'active' : ''}" onclick="switchLbTab(${i}, this)">${c.title.split(' ')[0]}</button>`
+  ).join('');
+}
+
+function switchLbTab(index, el) {
+  document.querySelectorAll('.leaderboard-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderLeaderboard(competitions[index].id);
+}
+
+// ===== Init =====
+document.addEventListener('DOMContentLoaded', () => {
+  // Render home competitions (first 3)
+  document.getElementById('competitions-grid-home').innerHTML =
+    competitions.slice(0, 3).map(renderCompCard).join('');
+
+  // Render all competitions
+  document.getElementById('competitions-grid-all').innerHTML =
+    competitions.map(renderCompCard).join('');
+
+  // Render leaderboard
+  renderLbTabs();
+  renderLeaderboard(competitions[0].id);
+
+  // Render syllabus
+  renderSyllabus();
+
+  // Create particles
+  createParticles();
+
+  // Close modals on overlay click
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) overlay.classList.remove('active');
+    });
+  });
+});
+</script>
+
+</body>
+</html>

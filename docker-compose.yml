@@ -1,0 +1,37 @@
+version: "3.8"
+
+services:
+  api:
+    build: ./backend
+    container_name: int305-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - SECRET_KEY=${SECRET_KEY:-change-me-in-production-2024}
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@xjtlu.edu.cn}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}
+      - DATABASE_URL=sqlite:///./int305_arena.db
+      - UPLOAD_DIR=./data/uploads
+      - DATASET_DIR=./data/datasets
+      - REQUIRE_APPROVAL=${REQUIRE_APPROVAL:-false}
+      - FRONTEND_URL=http://localhost
+    volumes:
+      - api-data:/app/data
+      - api-db:/app/int305_arena.db
+
+  frontend:
+    image: nginx:alpine
+    container_name: int305-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - api
+
+volumes:
+  api-data:
+  api-db:

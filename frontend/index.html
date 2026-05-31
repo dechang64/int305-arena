@@ -1,0 +1,1613 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>INT305 ML Arena — 机器学习竞赛教学平台</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<style>
+:root {
+  --bg-primary: #0a0e17;
+  --bg-secondary: #111827;
+  --bg-card: #1a2235;
+  --bg-card-hover: #1f2a40;
+  --bg-elevated: #243049;
+  --accent-blue: #3b82f6;
+  --accent-cyan: #06b6d4;
+  --accent-purple: #8b5cf6;
+  --accent-green: #10b981;
+  --accent-orange: #f59e0b;
+  --accent-red: #ef4444;
+  --accent-pink: #ec4899;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --border: #1e293b;
+  --border-light: #334155;
+  --shadow-glow: 0 0 40px rgba(59,130,246,0.12);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg-primary);color:var(--text-primary);line-height:1.6;overflow-x:hidden}
+a{color:var(--accent-blue);text-decoration:none}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg-secondary)}
+::-webkit-scrollbar-thumb{background:var(--border-light);border-radius:3px}
+
+/* ===== NAV ===== */
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,14,23,0.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 2rem;height:64px;display:flex;align-items:center;justify-content:space-between}
+.nav-brand{display:flex;align-items:center;gap:12px;font-weight:800;font-size:1.2rem}
+.nav-brand .icon{width:36px;height:36px;background:linear-gradient(135deg,var(--accent-blue),var(--accent-purple));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem}
+.nav-links{display:flex;gap:8px}
+.nav-links a{padding:8px 16px;border-radius:8px;color:var(--text-secondary);font-weight:500;font-size:.9rem;transition:all .2s}
+.nav-links a:hover,.nav-links a.active{color:var(--text-primary);background:var(--bg-card)}
+.nav-right{display:flex;align-items:center;gap:12px}
+.btn{padding:8px 20px;border-radius:8px;font-weight:600;font-size:.9rem;cursor:pointer;border:none;transition:all .2s;display:inline-flex;align-items:center;gap:8px}
+.btn-primary{background:linear-gradient(135deg,var(--accent-blue),var(--accent-purple));color:#fff}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(59,130,246,0.4)}
+.btn-outline{background:transparent;border:1px solid var(--border-light);color:var(--text-secondary)}
+.btn-outline:hover{border-color:var(--accent-blue);color:var(--accent-blue)}
+.btn-sm{padding:6px 14px;font-size:.8rem}
+.btn-danger{background:var(--accent-red);color:#fff}
+.btn-success{background:var(--accent-green);color:#fff}
+.user-badge{display:flex;align-items:center;gap:8px;padding:6px 12px;background:var(--bg-card);border-radius:8px;cursor:pointer}
+.user-badge .avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.75rem;color:#fff}
+
+/* ===== PAGES ===== */
+.page{display:none;padding-top:64px;min-height:100vh}
+.page.active{display:block}
+
+/* ===== HERO ===== */
+.hero{padding:6rem 2rem 4rem;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle at 50% 50%,rgba(59,130,246,0.08) 0%,transparent 50%);animation:heroGlow 8s ease-in-out infinite}
+@keyframes heroGlow{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+.hero h1{font-size:3.5rem;font-weight:900;background:linear-gradient(135deg,#fff,var(--accent-cyan),var(--accent-purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:1rem;position:relative}
+.hero p{font-size:1.2rem;color:var(--text-secondary);max-width:600px;margin:0 auto 2rem;position:relative}
+.hero-stats{display:flex;justify-content:center;gap:3rem;margin-top:2rem;position:relative}
+.hero-stat{text-align:center}
+.hero-stat .num{font-size:2rem;font-weight:800;color:var(--accent-blue)}
+.hero-stat .label{font-size:.85rem;color:var(--text-muted)}
+
+/* ===== CARDS ===== */
+.section{padding:4rem 2rem;max-width:1200px;margin:0 auto}
+.section-title{font-size:1.8rem;font-weight:800;margin-bottom:.5rem}
+.section-sub{color:var(--text-secondary);margin-bottom:2rem}
+.grid-3{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:1.5rem}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:1.5rem;transition:all .3s;cursor:pointer;position:relative;overflow:hidden}
+.card:hover{border-color:var(--accent-blue);transform:translateY(-4px);box-shadow:var(--shadow-glow)}
+.card-status{position:absolute;top:12px;right:12px;padding:4px 10px;border-radius:6px;font-size:.7rem;font-weight:700;text-transform:uppercase}
+.status-live{background:rgba(16,185,129,0.15);color:var(--accent-green)}
+.status-upcoming{background:rgba(245,158,11,0.15);color:var(--accent-orange)}
+.status-ended{background:rgba(100,116,139,0.15);color:var(--text-muted)}
+.card h3{font-size:1.15rem;font-weight:700;margin-bottom:.5rem;padding-right:80px}
+.card .subtitle{color:var(--accent-cyan);font-size:.85rem;font-weight:500;margin-bottom:.75rem}
+.card .desc{color:var(--text-secondary);font-size:.85rem;line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.card-meta{display:flex;gap:1rem;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);font-size:.8rem;color:var(--text-muted)}
+.card-meta span{display:flex;align-items:center;gap:4px}
+.card-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:.75rem}
+.tag{padding:3px 8px;border-radius:4px;font-size:.7rem;font-weight:600;background:rgba(59,130,246,0.1);color:var(--accent-blue)}
+
+/* ===== LEADERBOARD ===== */
+.lb-table{width:100%;border-collapse:collapse}
+.lb-table th{text-align:left;padding:12px 16px;font-size:.8rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;border-bottom:1px solid var(--border);background:var(--bg-secondary)}
+.lb-table td{padding:12px 16px;border-bottom:1px solid var(--border);font-size:.9rem}
+.lb-table tr:hover td{background:var(--bg-card-hover)}
+.lb-rank{font-weight:800;font-size:1.1rem}
+.lb-rank.gold{color:#fbbf24}
+.lb-rank.silver{color:#94a3b8}
+.lb-rank.bronze{color:#d97706}
+.lb-user{display:flex;align-items:center;gap:10px}
+.lb-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.75rem;color:#fff;flex-shrink:0}
+.lb-score{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--accent-green)}
+
+/* ===== SYLLABUS ===== */
+.timeline{position:relative;padding-left:2rem}
+.timeline::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:linear-gradient(to bottom,var(--accent-blue),var(--accent-purple),var(--accent-green))}
+.timeline-item{position:relative;padding:1.5rem 0 1.5rem 2rem}
+.timeline-item::before{content:'';position:absolute;left:-7px;top:1.8rem;width:16px;height:16px;border-radius:50%;background:var(--bg-primary);border:3px solid var(--accent-blue);z-index:1}
+.timeline-item:nth-child(even)::before{border-color:var(--accent-purple)}
+.timeline-week{font-size:.75rem;font-weight:700;color:var(--accent-cyan);text-transform:uppercase;margin-bottom:.25rem}
+.timeline-title{font-size:1.1rem;font-weight:700;margin-bottom:.25rem}
+.timeline-desc{color:var(--text-secondary);font-size:.85rem}
+.timeline-comp{display:inline-flex;align-items:center;gap:6px;margin-top:.5rem;padding:4px 10px;border-radius:6px;font-size:.75rem;font-weight:600;background:rgba(139,92,246,0.1);color:var(--accent-purple)}
+
+/* ===== AUTH MODAL ===== */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);z-index:200;align-items:center;justify-content:center}
+.modal-overlay.active{display:flex}
+.modal{background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:2.5rem;width:100%;max-width:440px;position:relative;animation:modalIn .3s ease}
+@keyframes modalIn{from{opacity:0;transform:scale(.95) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.modal h2{font-size:1.5rem;font-weight:800;margin-bottom:.5rem}
+.modal p{color:var(--text-secondary);font-size:.9rem;margin-bottom:1.5rem}
+.modal-close{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--text-muted);font-size:1.2rem;cursor:pointer}
+.form-group{margin-bottom:1rem}
+.form-group label{display:block;font-size:.85rem;font-weight:600;margin-bottom:.4rem;color:var(--text-secondary)}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 14px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:10px;color:var(--text-primary);font-size:.9rem;font-family:inherit;transition:border-color .2s}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:var(--accent-blue)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.form-error{color:var(--accent-red);font-size:.8rem;margin-top:.25rem}
+
+/* ===== COMPETITION DETAIL ===== */
+.comp-detail{padding:2rem;max-width:1000px;margin:0 auto}
+.comp-header{margin-bottom:2rem}
+.comp-header h1{font-size:2rem;font-weight:900;margin-bottom:.5rem}
+.comp-header .meta{display:flex;gap:1.5rem;color:var(--text-secondary);font-size:.9rem;flex-wrap:wrap}
+.comp-header .meta span{display:flex;align-items:center;gap:6px}
+.comp-body{display:grid;grid-template-columns:2fr 1fr;gap:2rem}
+@media(max-width:768px){.comp-body{grid-template-columns:1fr}}
+.comp-desc{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:1.5rem}
+.comp-desc h3{font-size:1.1rem;font-weight:700;margin-bottom:1rem}
+.comp-desc p{color:var(--text-secondary);font-size:.9rem;line-height:1.7;white-space:pre-line}
+.comp-sidebar{display:flex;flex-direction:column;gap:1rem}
+.sidebar-card{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:1.25rem}
+.sidebar-card h4{font-size:.9rem;font-weight:700;margin-bottom:.75rem;color:var(--text-secondary)}
+.sidebar-card .metric{font-family:'JetBrains Mono',monospace;font-size:1.5rem;font-weight:800;color:var(--accent-green)}
+.sidebar-card .metric-label{font-size:.8rem;color:var(--text-muted)}
+.submit-area{margin-top:1rem}
+.submit-area label{display:block;font-size:.85rem;font-weight:600;margin-bottom:.4rem;color:var(--text-secondary)}
+.file-input-wrapper{position:relative;overflow:hidden;display:inline-block;width:100%}
+.file-input-wrapper input[type=file]{width:100%;padding:12px;background:var(--bg-secondary);border:2px dashed var(--border-light);border-radius:10px;color:var(--text-secondary);font-size:.85rem;cursor:pointer}
+.file-input-wrapper input[type=file]:hover{border-color:var(--accent-blue)}
+.submit-result{margin-top:1rem;padding:1rem;border-radius:10px;font-size:.9rem}
+.submit-result.success{background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:var(--accent-green)}
+.submit-result.error{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:var(--accent-red)}
+
+/* ===== ADMIN ===== */
+.admin-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem;margin-bottom:2rem}
+.admin-stat{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;text-align:center}
+.admin-stat .num{font-size:2rem;font-weight:800}
+.admin-stat .label{font-size:.8rem;color:var(--text-muted);margin-top:.25rem}
+.admin-table{width:100%;border-collapse:collapse}
+.admin-table th{text-align:left;padding:10px 14px;font-size:.8rem;font-weight:600;color:var(--text-muted);border-bottom:1px solid var(--border);background:var(--bg-secondary)}
+.admin-table td{padding:10px 14px;border-bottom:1px solid var(--border);font-size:.85rem}
+.admin-table tr:hover td{background:var(--bg-card-hover)}
+.badge{padding:3px 8px;border-radius:4px;font-size:.7rem;font-weight:700}
+.badge-approved{background:rgba(16,185,129,0.15);color:var(--accent-green)}
+.badge-pending{background:rgba(245,158,11,0.15);color:var(--accent-orange)}
+.badge-rejected{background:rgba(239,68,68,0.15);color:var(--accent-red)}
+.badge-admin{background:rgba(139,92,246,0.15);color:var(--accent-purple)}
+
+/* ===== SUBMISSION HISTORY ===== */
+.sub-table{width:100%;border-collapse:collapse;margin-top:1rem}
+.sub-table th{text-align:left;padding:8px 12px;font-size:.75rem;font-weight:600;color:var(--text-muted);border-bottom:1px solid var(--border)}
+.sub-table td{padding:8px 12px;border-bottom:1px solid var(--border);font-size:.85rem}
+
+/* ===== GRADING ===== */
+.grading-formula{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:2rem;margin:2rem 0}
+.grading-formula h3{margin-bottom:1rem}
+.formula-row{display:flex;align-items:center;gap:1rem;padding:.75rem 0;border-bottom:1px solid var(--border)}
+.formula-row:last-child{border-bottom:none}
+.formula-pct{font-size:1.5rem;font-weight:800;color:var(--accent-blue);min-width:60px}
+.formula-desc{flex:1}
+.formula-desc strong{display:block;margin-bottom:.25rem}
+.formula-desc span{font-size:.85rem;color:var(--text-secondary)}
+
+/* ===== TOAST ===== */
+.toast-container{position:fixed;top:80px;right:20px;z-index:300;display:flex;flex-direction:column;gap:8px}
+.toast{padding:12px 20px;border-radius:10px;font-size:.9rem;font-weight:500;animation:toastIn .3s ease;max-width:400px}
+.toast-success{background:rgba(16,185,129,0.9);color:#fff}
+.toast-error{background:rgba(239,68,68,0.9);color:#fff}
+.toast-info{background:rgba(59,130,246,0.9);color:#fff}
+@keyframes toastIn{from{opacity:0;transform:translateX(100px)}to{opacity:1;transform:translateX(0)}}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:768px){
+  .hero h1{font-size:2rem}
+  .hero-stats{gap:1.5rem}
+  .grid-3{grid-template-columns:1fr}
+  .nav-links{display:none}
+  .form-row{grid-template-columns:1fr}
+}
+
+/* ===== LOADING ===== */
+.loading{display:flex;align-items:center;justify-content:center;padding:3rem;color:var(--text-muted)}
+.spinner{width:24px;height:24px;border:3px solid var(--border);border-top-color:var(--accent-blue);border-radius:50%;animation:spin .8s linear infinite;margin-right:10px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ===== DATASET LIST ===== */
+.dataset-list{list-style:none;margin-top:.5rem}
+.dataset-list li{padding:8px 0;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.dataset-list li:last-child{border-bottom:none}
+.dataset-list a{color:var(--accent-cyan);font-size:.85rem;display:flex;align-items:center;gap:6px}
+.dataset-list a:hover{text-decoration:underline}
+
+/* ===== TABS ===== */
+.tabs{display:flex;gap:4px;margin-bottom:1.5rem;background:var(--bg-secondary);padding:4px;border-radius:10px;overflow-x:auto}
+.tab{padding:8px 16px;border-radius:8px;font-size:.85rem;font-weight:600;color:var(--text-muted);cursor:pointer;transition:all .2s;white-space:nowrap}
+.tab:hover{color:var(--text-secondary)}
+.tab.active{background:var(--bg-card);color:var(--text-primary)}
+
+/* ===== EMPTY STATE ===== */
+.empty-state{text-align:center;padding:3rem;color:var(--text-muted)}
+.empty-state i{font-size:3rem;margin-bottom:1rem;opacity:.3}
+.empty-state p{font-size:1rem}
+</style>
+</head>
+<body>
+
+<!-- ===== NAVIGATION ===== -->
+<nav class="nav">
+  <div class="nav-brand">
+    <div class="icon"><i class="fas fa-trophy"></i></div>
+    <span>INT305 Arena</span>
+  </div>
+  <div class="nav-links">
+    <a href="#" onclick="showPage('home')" class="active" data-page="home">首页</a>
+    <a href="#" onclick="showPage('competitions')" data-page="competitions">竞赛中心</a>
+    <a href="#" onclick="showPage('market')" data-page="market">任务市场</a>
+    <a href="#" onclick="showPage('leaderboard')" data-page="leaderboard">排行榜</a>
+    <a href="#" onclick="showPage('syllabus')" data-page="syllabus">课程大纲</a>
+    <a href="#" onclick="showPage('grading')" data-page="grading">评分规则</a>
+    <a href="#" onclick="showPage('admin')" data-page="admin" id="nav-admin" style="display:none">管理后台</a>
+  </div>
+  <div class="nav-right" id="nav-right">
+    <button class="btn btn-outline btn-sm" onclick="showModal('login')">登录</button>
+    <button class="btn btn-primary btn-sm" onclick="showModal('register')">注册</button>
+  </div>
+</nav>
+
+<!-- ===== TOAST CONTAINER ===== -->
+<div class="toast-container" id="toasts"></div>
+
+<!-- ===== HOME PAGE ===== -->
+<div class="page active" id="page-home">
+  <div class="hero">
+    <h1>INT305 Machine Learning Arena</h1>
+    <p>以赛促学 — 通过 Kaggle 式竞赛驱动机器学习课程，12 讲对应 6 场实战挑战</p>
+    <div style="position:relative;display:flex;gap:1rem;justify-content:center">
+      <button class="btn btn-primary" onclick="showModal('register')"><i class="fas fa-rocket"></i> 立即注册</button>
+      <button class="btn btn-outline" onclick="showPage('competitions')"><i class="fas fa-flag"></i> 浏览竞赛</button>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="num" id="stat-comps">6</div><div class="label">竞赛场次</div></div>
+      <div class="hero-stat"><div class="num" id="stat-students">0</div><div class="label">参赛学生</div></div>
+      <div class="hero-stat"><div class="num" id="stat-subs">0</div><div class="label">总提交数</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">运作方式</div>
+    <div class="section-sub">三步完成从学习到实战的闭环</div>
+    <div class="grid-3">
+      <div class="card" style="cursor:default">
+        <div style="font-size:2.5rem;margin-bottom:1rem">📥</div>
+        <h3>1. 下载数据 & 学习</h3>
+        <p class="desc">每场竞赛提供训练集、测试集、样例提交和基线代码。结合课堂讲义，理解算法原理。</p>
+      </div>
+      <div class="card" style="cursor:default">
+        <div style="font-size:2.5rem;margin-bottom:1rem">🧠</div>
+        <h3>2. 训练模型 & 提交</h3>
+        <p class="desc">在本地训练模型，生成预测文件上传。系统自动评分，实时反馈。每天最多提交 5 次。</p>
+      </div>
+      <div class="card" style="cursor:default">
+        <div style="font-size:2.5rem;margin-bottom:1rem">🏆</div>
+        <h3>3. 排名竞争 & 迭代</h3>
+        <p class="desc">实时排行榜驱动竞争。持续优化模型提升排名，最终成绩由所有竞赛综合评定。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">当前竞赛</div>
+    <div class="section-sub">正在进行和即将开始的挑战</div>
+    <div class="grid-3" id="home-comps-grid"></div>
+  </div>
+</div>
+
+<!-- ===== COMPETITIONS PAGE ===== -->
+<div class="page" id="page-competitions">
+  <div class="section">
+    <div class="section-title">竞赛中心</div>
+    <div class="section-sub">6 场竞赛覆盖 INT305 全部 12 讲内容</div>
+    <div class="tabs" id="comp-filter-tabs">
+      <div class="tab active" onclick="filterComps('all',this)">全部</div>
+      <div class="tab" onclick="filterComps('live',this)">进行中</div>
+      <div class="tab" onclick="filterComps('upcoming',this)">即将开始</div>
+      <div class="tab" onclick="filterComps('ended',this)">已结束</div>
+    </div>
+    <div class="grid-3" id="all-comps-grid"></div>
+  </div>
+</div>
+
+<!-- ===== COMPETITION DETAIL PAGE ===== -->
+<div class="page" id="page-comp-detail">
+  <div class="comp-detail" id="comp-detail-content"></div>
+</div>
+
+<!-- ===== TASK MARKET PAGE ===== -->
+<div class="page" id="page-market">
+  <div class="section">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem">
+      <div>
+        <div class="section-title">任务市场</div>
+        <div class="section-sub">从毕设拆出真实需求，让同学来帮你做</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-outline" onclick="showPage('my-tasks')"><i class="fas fa-user"></i> 我的任务</button>
+        <button class="btn btn-primary" onclick="showModal('post-task')"><i class="fas fa-plus"></i> 发布任务</button>
+      </div>
+    </div>
+    <div class="grid-3" id="market-stats" style="margin-top:1.5rem"></div>
+    <div style="display:flex;gap:8px;margin-top:1.5rem;flex-wrap:wrap;align-items:center">
+      <div class="tabs" id="market-filter-tabs" style="margin:0">
+        <div class="tab active" onclick="filterMarket('all',this)">全部</div>
+        <div class="tab" onclick="filterMarket('open',this)">开放中</div>
+        <div class="tab" onclick="filterMarket('in_progress',this)">进行中</div>
+        <div class="tab" onclick="filterMarket('completed',this)">已完成</div>
+      </div>
+      <select id="market-category-filter" onchange="filterMarket(currentMarketFilter, document.querySelector('#market-filter-tabs .tab.active'))" style="padding:6px 12px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:.85rem">
+        <option value="">所有类别</option>
+        <option value="data_pipeline">数据预处理</option>
+        <option value="model_training">模型训练</option>
+        <option value="visualization">可视化</option>
+        <option value="api_service">API/Docker</option>
+        <option value="baseline_repo">基线复现</option>
+        <option value="testing_bench">测试/Benchmark</option>
+        <option value="other">其他</option>
+      </select>
+      <select id="market-difficulty-filter" onchange="filterMarket(currentMarketFilter, document.querySelector('#market-filter-tabs .tab.active'))" style="padding:6px 12px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:.85rem">
+        <option value="">所有难度</option>
+        <option value="easy">简单</option>
+        <option value="medium">中等</option>
+        <option value="hard">困难</option>
+      </select>
+    </div>
+    <div id="market-tasks-grid" style="margin-top:1.5rem"></div>
+    <div class="loading" id="market-loading" style="display:none"><div class="spinner"></div>加载中...</div>
+    <div class="empty-state" id="market-empty" style="display:none"><i class="fas fa-store"></i><p>暂无任务，快来发布第一个吧</p></div>
+  </div>
+</div>
+
+<!-- ===== TASK DETAIL PAGE ===== -->
+<div class="page" id="page-task-detail">
+  <div class="section" id="task-detail-content"></div>
+</div>
+
+<!-- ===== MY TASKS PAGE ===== -->
+<div class="page" id="page-my-tasks">
+  <div class="section">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem">
+      <div>
+        <div class="section-title">我的任务</div>
+        <div class="section-sub">我发布的任务和接单记录</div>
+      </div>
+      <button class="btn btn-outline" onclick="showPage('market')"><i class="fas fa-arrow-left"></i> 返回市场</button>
+    </div>
+    <div class="tabs" id="my-tasks-tabs" style="margin-top:1rem">
+      <div class="tab active" onclick="switchMyTasksTab('posted',this)">我发布的</div>
+      <div class="tab" onclick="switchMyTasksTab('applied',this)">我申请的</div>
+      <div class="tab" onclick="switchMyTasksTab('credit',this)">信用分</div>
+    </div>
+    <div id="my-tasks-content" style="margin-top:1rem"></div>
+  </div>
+</div>
+
+<!-- ===== LEADERBOARD PAGE ===== -->
+<div class="page" id="page-leaderboard">
+  <div class="section">
+    <div class="section-title">排行榜</div>
+    <div class="section-sub">实时排名，驱动竞争</div>
+    <div class="tabs" id="lb-tabs"></div>
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:16px;overflow:hidden">
+      <table class="lb-table">
+        <thead><tr><th style="width:60px">排名</th><th>选手</th><th>分数</th><th>提交次数</th><th>最后提交</th></tr></thead>
+        <tbody id="lb-body"></tbody>
+      </table>
+      <div class="loading" id="lb-loading" style="display:none"><div class="spinner"></div>加载中...</div>
+      <div class="empty-state" id="lb-empty" style="display:none"><i class="fas fa-chart-bar"></i><p>暂无提交记录</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SYLLABUS PAGE ===== -->
+<div class="page" id="page-syllabus">
+  <div class="section">
+    <div class="section-title">课程大纲</div>
+    <div class="section-sub">12 讲 × 6 场竞赛，理论与实践一一对应</div>
+    <div class="timeline" id="syllabus-timeline"></div>
+  </div>
+</div>
+
+<!-- ===== GRADING PAGE ===== -->
+<div class="page" id="page-grading">
+  <div class="section">
+    <div class="section-title">评分规则</div>
+    <div class="section-sub">100% 竞赛驱动，公平透明</div>
+    <div class="grading-formula">
+      <h3>成绩构成</h3>
+      <div class="formula-row">
+        <div class="formula-pct">60%</div>
+        <div class="formula-desc">
+          <strong>竞赛排名分</strong>
+          <span>每场竞赛归一化排名分 = 40 + 60 × (N - rank) / (N - 1)，取 6 场均值。保底 40 分，避免零分焦虑。</span>
+        </div>
+      </div>
+      <div class="formula-row">
+        <div class="formula-pct" style="color:var(--accent-green)">20%</div>
+        <div class="formula-desc">
+          <strong>进步奖励分</strong>
+          <span>基于首次提交与最佳提交的改进幅度，鼓励持续迭代优化而非一次提交定终身。</span>
+        </div>
+      </div>
+      <div class="formula-row">
+        <div class="formula-pct" style="color:var(--accent-orange)">15%</div>
+        <div class="formula-desc">
+          <strong>代码报告分</strong>
+          <span>提交代码和实验报告，确保理解算法原理。防止刷分作弊，要求可复现性。</span>
+        </div>
+      </div>
+      <div class="formula-row">
+        <div class="formula-pct" style="color:var(--accent-purple)">5%</div>
+        <div class="formula-desc">
+          <strong>社区贡献分</strong>
+          <span>在讨论区活跃互动、分享思路、帮助同学，营造良好学习氛围。</span>
+        </div>
+      </div>
+    </div>
+    <div class="grading-formula">
+      <h3>防作弊机制</h3>
+      <div style="color:var(--text-secondary);font-size:.9rem;line-height:2">
+        <div>✅ 每日提交上限（5次/天），防止暴力搜索</div>
+        <div>✅ 公开排行榜使用公开测试集，最终评分使用隐藏测试集</div>
+        <div>✅ 代码审查要求：提交代码必须可复现结果</div>
+        <div>✅ 异常分数检测：与基线差异过大的提交需人工审核</div>
+        <div>✅ 同一团队不可多人注册刷排名</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ADMIN PAGE ===== -->
+<div class="page" id="page-admin">
+  <div class="section">
+    <div class="section-title">管理后台</div>
+    <div class="section-sub">用户审核、竞赛管理、成绩导出</div>
+    <div class="admin-grid" id="admin-stats"></div>
+
+    <div class="tabs" id="admin-tabs">
+      <div class="tab active" onclick="switchAdminTab('users',this)">用户管理</div>
+      <div class="tab" onclick="switchAdminTab('comps',this)">竞赛管理</div>
+      <div class="tab" onclick="switchAdminTab('tasks',this)">任务审核</div>
+      <div class="tab" onclick="switchAdminTab('recent',this)">最近提交</div>
+      <div class="tab" onclick="switchAdminTab('grades',this)">成绩导出</div>
+    </div>
+
+    <div id="admin-users" class="admin-panel">
+      <div style="display:flex;gap:8px;margin-bottom:1rem">
+        <button class="btn btn-success btn-sm" onclick="batchApprove()"><i class="fas fa-check"></i> 批量通过</button>
+        <input type="text" id="user-search" placeholder="搜索姓名/邮箱/学号..." style="flex:1;padding:8px 12px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:.85rem" onkeyup="loadAdminUsers()">
+      </div>
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:16px;overflow-x:auto">
+        <table class="admin-table">
+          <thead><tr><th><input type="checkbox" id="select-all-users" onchange="toggleAllUsers(this)"></th><th>姓名</th><th>学号</th><th>邮箱</th><th>状态</th><th>提交数</th><th>操作</th></tr></thead>
+          <tbody id="admin-users-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="admin-comps" class="admin-panel" style="display:none">
+      <button class="btn btn-primary btn-sm" onclick="showModal('create-comp')" style="margin-bottom:1rem"><i class="fas fa-plus"></i> 创建竞赛</button>
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:16px;overflow-x:auto">
+        <table class="admin-table">
+          <thead><tr><th>竞赛</th><th>状态</th><th>指标</th><th>参与人数</th><th>提交数</th><th>操作</th></tr></thead>
+          <tbody id="admin-comps-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="admin-recent" class="admin-panel" style="display:none">
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:16px;overflow-x:auto">
+        <table class="admin-table">
+          <thead><tr><th>时间</th><th>学生</th><th>竞赛</th><th>分数</th><th>状态</th></tr></thead>
+          <tbody id="admin-recent-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="admin-grades" class="admin-panel" style="display:none">
+      <button class="btn btn-primary btn-sm" onclick="exportGrades()"><i class="fas fa-download"></i> 导出成绩表 (CSV)</button>
+      <p style="color:var(--text-muted);font-size:.85rem;margin-top:.5rem">导出包含所有学生的竞赛排名分、进步奖励分，代码报告分和社区贡献分需手动填写。</p>
+    </div>
+
+    <div id="admin-tasks" class="admin-panel" style="display:none">
+      <h3 style="margin-bottom:1rem">待审核任务</h3>
+      <div id="admin-pending-tasks"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== LOGIN MODAL ===== -->
+<div class="modal-overlay" id="modal-login">
+  <div class="modal">
+    <button class="modal-close" onclick="hideModal('login')">&times;</button>
+    <h2>欢迎回来</h2>
+    <p>登录你的 INT305 Arena 账号</p>
+    <div class="form-group"><label>邮箱</label><input type="email" id="login-email" placeholder="your.name@xjtlu.edu.cn"></div>
+    <div class="form-group"><label>密码</label><input type="password" id="login-password" placeholder="输入密码"></div>
+    <div id="login-error" class="form-error"></div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:.5rem" onclick="doLogin()">登录</button>
+    <div style="text-align:center;margin-top:1rem;font-size:.85rem;color:var(--text-muted)">
+      还没有账号？<a href="#" onclick="hideModal('login');showModal('register')">立即注册</a>
+    </div>
+  </div>
+</div>
+
+<!-- ===== REGISTER MODAL ===== -->
+<div class="modal-overlay" id="modal-register">
+  <div class="modal">
+    <button class="modal-close" onclick="hideModal('register')">&times;</button>
+    <h2>加入竞赛</h2>
+    <p>注册 INT305 ML Arena 账号</p>
+    <div class="form-group"><label>姓名</label><input type="text" id="reg-name" placeholder="张三"></div>
+    <div class="form-row">
+      <div class="form-group"><label>学号</label><input type="text" id="reg-sid" placeholder="2023XXXX"></div>
+      <div class="form-group"><label>队伍名 (可选)</label><input type="text" id="reg-team" placeholder="ML Warriors"></div>
+    </div>
+    <div class="form-group"><label>学校邮箱</label><input type="email" id="reg-email" placeholder="your.name@xjtlu.edu.cn"></div>
+    <div class="form-group"><label>密码</label><input type="password" id="reg-password" placeholder="至少6位"></div>
+    <div id="reg-error" class="form-error"></div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:.5rem" onclick="doRegister()">注册</button>
+    <div style="text-align:center;margin-top:1rem;font-size:.85rem;color:var(--text-muted)">
+      已有账号？<a href="#" onclick="hideModal('register');showModal('login')">去登录</a>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CREATE COMPETITION MODAL ===== -->
+<div class="modal-overlay" id="modal-create-comp">
+  <div class="modal" style="max-width:560px">
+    <button class="modal-close" onclick="hideModal('create-comp')">&times;</button>
+    <h2>创建竞赛</h2>
+    <p>设置新的竞赛挑战</p>
+    <div class="form-row">
+      <div class="form-group"><label>竞赛标题</label><input type="text" id="comp-title" placeholder="🏠 房价预测挑战赛"></div>
+      <div class="form-group"><label>URL 标识</label><input type="text" id="comp-slug" placeholder="comp1-house-price"></div>
+    </div>
+    <div class="form-group"><label>副标题</label><input type="text" id="comp-subtitle" placeholder="Linear Regression"></div>
+    <div class="form-group"><label>描述</label><textarea id="comp-desc" rows="4" placeholder="竞赛描述..."></textarea></div>
+    <div class="form-row">
+      <div class="form-group"><label>评估指标</label><select id="comp-metric"><option>RMSE</option><option>Accuracy</option><option>AUC-ROC</option><option>F1</option><option>MAE</option><option>NMI</option></select></div>
+      <div class="form-group"><label>方向</label><select id="comp-direction"><option value="lower">越低越好</option><option value="higher">越高越好</option></select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>每日提交上限</label><input type="number" id="comp-max-day" value="5"></div>
+      <div class="form-group"><label>总提交上限</label><input type="number" id="comp-max-total" value="50"></div>
+    </div>
+    <div class="form-group"><label>关联讲次</label><input type="text" id="comp-lectures" placeholder="Lecture 1-2"></div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:.5rem" onclick="doCreateComp()">创建</button>
+  </div>
+</div>
+
+
+<!-- ===== POST TASK MODAL ===== -->
+<div class="modal-overlay" id="modal-post-task">
+  <div class="modal" style="max-width:640px;max-height:90vh;overflow-y:auto">
+    <button class="modal-close" onclick="hideModal('post-task')">&times;</button>
+    <h2>发布任务</h2>
+    <p>从你的毕设中拆出一个可独立完成的ML任务</p>
+    <div class="form-group"><label>任务标题 *</label><input type="text" id="task-title" placeholder="如：医学图像预处理Pipeline"></div>
+    <div class="form-row">
+      <div class="form-group"><label>任务类别 *</label>
+        <select id="task-category">
+          <option value="data_pipeline">数据预处理 Pipeline</option>
+          <option value="model_training">模型训练脚本</option>
+          <option value="visualization">可视化 Dashboard</option>
+          <option value="api_service">API 封装 / Docker 化</option>
+          <option value="baseline_repo">基线模型复现</option>
+          <option value="testing_bench">单元测试 + Benchmark</option>
+          <option value="other">其他</option>
+        </select>
+      </div>
+      <div class="form-group"><label>难度</label>
+        <select id="task-difficulty">
+          <option value="easy">简单 (4h以内)</option>
+          <option value="medium" selected>中等 (4-12h)</option>
+          <option value="hard">困难 (12h以上)</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group"><label>任务详细描述 *</label><textarea id="task-description" rows="4" placeholder="描述任务背景、目标、技术要求..."></textarea></div>
+    <div class="form-row">
+      <div class="form-group"><label>毕设题目</label><input type="text" id="task-thesis-title" placeholder="你的毕业设计题目"></div>
+      <div class="form-group"><label>指导老师</label><input type="text" id="task-thesis-advisor" placeholder="导师姓名"></div>
+    </div>
+    <div class="form-group"><label>交付物 * <span style="font-weight:400;color:var(--text-muted);font-size:.8rem">(每行一个)</span></label><textarea id="task-deliverables" rows="3" placeholder="训练脚本&#10;README文档&#10;Docker镜像"></textarea></div>
+    <div class="form-group"><label>验收标准 *</label><textarea id="task-acceptance" rows="3" placeholder="明确什么算完成，如：准确率>=85%、代码可一键运行..."></textarea></div>
+    <div class="form-row">
+      <div class="form-group"><label>预估工时(小时)</label><input type="number" id="task-hours" placeholder="8"></div>
+      <div class="form-group"><label>交付截止时间</label><input type="datetime-local" id="task-deadline"></div>
+    </div>
+    <div class="form-group"><label>数据说明</label><textarea id="task-data-desc" rows="2" placeholder="数据来源、格式、大小..."></textarea></div>
+    <div class="form-row">
+      <div class="form-group"><label>数据可用性</label>
+        <select id="task-data-avail">
+          <option value="public">公开数据集</option>
+          <option value="shared">可共享私有数据</option>
+          <option value="private">需出题者提供</option>
+        </select>
+      </div>
+      <div class="form-group"><label>标签 <span style="font-weight:400;color:var(--text-muted);font-size:.8rem">(逗号分隔)</span></label><input type="text" id="task-tags" placeholder="PyTorch, CV, 医学图像"></div>
+    </div>
+    <div class="form-group"><label>资源链接 <span style="font-weight:400;color:var(--text-muted);font-size:.8rem">(每行一个URL)</span></label><textarea id="task-links" rows="2" placeholder="https://..."></textarea></div>
+    <div id="task-post-error" class="form-error"></div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:.5rem" onclick="doPostTask()">提交审核</button>
+    <p style="font-size:.8rem;color:var(--text-muted);text-align:center;margin-top:.5rem">提交后需管理员审核通过才会在市场显示</p>
+  </div>
+</div>
+
+<!-- ===== APPLY TASK MODAL ===== -->
+<div class="modal-overlay" id="modal-apply-task">
+  <div class="modal" style="max-width:560px">
+    <button class="modal-close" onclick="hideModal('apply-task')">&times;</button>
+    <h2>申请接单</h2>
+    <p>向出题者展示你的能力和方案</p>
+    <div class="form-group"><label>申请留言</label><textarea id="apply-message" rows="2" placeholder="简单介绍自己..."></textarea></div>
+    <div class="form-group"><label>提案方案</label><textarea id="apply-approach" rows="4" placeholder="你打算怎么做？用什么技术栈？"></textarea></div>
+    <div id="apply-error" class="form-error"></div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:.5rem" onclick="doApplyTask()">提交申请</button>
+  </div>
+</div>
+
+<!-- ===== DELIVER TASK MODAL ===== -->
+<div class="modal-overlay" id="modal-deliver-task">
+  <div class="modal" style="max-width:560px">
+    <button class="modal-close" onclick="hideModal('deliver-task')">&times;</button>
+    <h2>提交交付物</h2>
+    <p>提交你的工作成果</p>
+    <div class="form-group"><label>代码链接</label><input type="text" id="deliver-code-url" placeholder="GitHub 仓库链接"></div>
+    <div class="form-group"><label>Demo 链接</label><input type="text" id="deliver-demo-url" placeholder="在线演示地址（可选）"></div>
+    <div class="form-group"><label>文档说明</label><textarea id="deliver-docs" rows="4" placeholder="简要说明实现方案、使用方法..."></textarea></div>
+    <div id="deliver-error" class="form-error"></div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:.5rem" onclick="doDeliverTask()">提交交付</button>
+  </div>
+</div>
+
+<script>
+// ===== API Client =====
+const API = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:8000/api'
+  : '/api';
+
+let token = localStorage.getItem('int305_token');
+let currentUser = JSON.parse(localStorage.getItem('int305_user') || 'null');
+let competitions = [];
+let currentCompId = null;
+
+// ===== Auth =====
+async function doLogin() {
+  const email = document.getElementById('login-email').value;
+  const password = document.getElementById('login-password').value;
+  try {
+    const res = await fetch(`${API}/auth/login`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({email, password})
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || '登录失败');
+    token = data.access_token;
+    currentUser = data.user;
+    localStorage.setItem('int305_token', token);
+    localStorage.setItem('int305_user', JSON.stringify(currentUser));
+    hideModal('login');
+    updateNav();
+    toast('登录成功', 'success');
+    loadHomeData();
+  } catch(e) {
+    document.getElementById('login-error').textContent = e.message;
+  }
+}
+
+async function doRegister() {
+  const name = document.getElementById('reg-name').value;
+  const student_id = document.getElementById('reg-sid').value;
+  const team = document.getElementById('reg-team').value || null;
+  const email = document.getElementById('reg-email').value;
+  const password = document.getElementById('reg-password').value;
+  try {
+    const res = await fetch(`${API}/auth/register`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({name, student_id, team, email, password})
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || '注册失败');
+    token = data.access_token;
+    currentUser = data.user;
+    localStorage.setItem('int305_token', token);
+    localStorage.setItem('int305_user', JSON.stringify(currentUser));
+    hideModal('register');
+    updateNav();
+    toast('注册成功！', 'success');
+    loadHomeData();
+  } catch(e) {
+    document.getElementById('reg-error').textContent = e.message;
+  }
+}
+
+function doLogout() {
+  token = null;
+  currentUser = null;
+  localStorage.removeItem('int305_token');
+  localStorage.removeItem('int305_user');
+  updateNav();
+  showPage('home');
+  toast('已退出登录', 'info');
+}
+
+function updateNav() {
+  const right = document.getElementById('nav-right');
+  const adminLink = document.getElementById('nav-admin');
+  if (currentUser) {
+    right.innerHTML = `
+      <div class="user-badge" onclick="doLogout()" title="点击退出">
+        <div class="avatar" style="background:${currentUser.avatar_color || '#3b82f6'}">${currentUser.name[0]}</div>
+        <span style="font-size:.85rem;font-weight:600">${currentUser.name}</span>
+      </div>`;
+    if (currentUser.role === 'admin') adminLink.style.display = '';
+  } else {
+    right.innerHTML = `
+      <button class="btn btn-outline btn-sm" onclick="showModal('login')">登录</button>
+      <button class="btn btn-primary btn-sm" onclick="showModal('register')">注册</button>`;
+    adminLink.style.display = 'none';
+  }
+}
+
+// ===== API Helper =====
+async function apiFetch(path, options = {}) {
+  const headers = options.headers || {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  if (options.body && !(options.body instanceof FormData)) {
+    headers['Content-Type'] = 'application/json';
+    options.body = JSON.stringify(options.body);
+  }
+  const res = await fetch(`${API}${path}`, {...options, headers});
+  if (res.status === 401) { doLogout(); throw new Error('登录已过期'); }
+  return res;
+}
+
+// ===== Pages =====
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(`page-${name}`).classList.add('active');
+  document.querySelectorAll('.nav-links a').forEach(a => a.classList.toggle('active', a.dataset.page === name));
+  window.scrollTo(0, 0);
+
+  if (name === 'home') loadHomeData();
+  else if (name === 'competitions') loadCompetitions();
+  else if (name === 'market') loadMarket();
+  else if (name === 'task-detail') {} // loaded by showTaskDetail
+  else if (name === 'my-tasks') loadMyTasks();
+  else if (name === 'leaderboard') loadLeaderboard();
+  else if (name === 'syllabus') renderSyllabus();
+  else if (name === 'admin') loadAdmin();
+}
+
+// ===== Home =====
+async function loadHomeData() {
+  try {
+    const res = await apiFetch('/competitions');
+    competitions = await res.json();
+    document.getElementById('stat-comps').textContent = competitions.length;
+    document.getElementById('home-comps-grid').innerHTML = competitions.slice(0, 3).map(renderCompCard).join('');
+  } catch(e) {
+    // Fallback to demo data
+    competitions = getDemoCompetitions();
+    document.getElementById('home-comps-grid').innerHTML = competitions.slice(0, 3).map(renderCompCard).join('');
+  }
+}
+
+// ===== Competitions =====
+async function loadCompetitions() {
+  try {
+    const res = await apiFetch('/competitions');
+    competitions = await res.json();
+  } catch(e) {
+    competitions = getDemoCompetitions();
+  }
+  renderCompetitions(competitions);
+}
+
+function renderCompetitions(comps) {
+  document.getElementById('all-comps-grid').innerHTML = comps.map(renderCompCard).join('');
+}
+
+function filterComps(status, el) {
+  document.querySelectorAll('#comp-filter-tabs .tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  const filtered = status === 'all' ? competitions : competitions.filter(c => c.status === status);
+  renderCompetitions(filtered);
+}
+
+function renderCompCard(c) {
+  const statusMap = {live: '进行中', upcoming: '即将开始', ended: '已结束'};
+  return `<div class="card" onclick="showCompDetail(${c.id})">
+    <div class="card-status status-${c.status}">${statusMap[c.status] || c.status}</div>
+    <h3>${c.title}</h3>
+    <div class="subtitle">${c.subtitle || ''}</div>
+    <p class="desc">${c.description || ''}</p>
+    <div class="card-tags">${(c.tags||[]).map(t => `<span class="tag">${t}</span>`).join('')}</div>
+    <div class="card-meta">
+      <span><i class="fas fa-chart-line"></i> ${c.metric}</span>
+      <span><i class="fas fa-users"></i> ${c.participant_count || 0} 人</span>
+      <span><i class="fas fa-book"></i> ${c.lectures || ''}</span>
+    </div>
+  </div>`;
+}
+
+// ===== Competition Detail =====
+async function showCompDetail(compId) {
+  currentCompId = compId;
+  let comp;
+  try {
+    const res = await apiFetch(`/competitions/${compId}`);
+    comp = await res.json();
+  } catch(e) {
+    comp = competitions.find(c => c.id === compId) || getDemoCompetitions()[0];
+  }
+
+  const statusMap = {live: '进行中', upcoming: '即将开始', ended: '已结束'};
+  const dirMap = {lower: '↓ 越低越好', higher: '↑ 越高越好'};
+
+  let submitHTML = '';
+  if (comp.status === 'live' && currentUser && currentUser.status === 'approved') {
+    submitHTML = `
+      <div class="sidebar-card">
+        <h4><i class="fas fa-upload"></i> 提交预测</h4>
+        <div class="submit-area">
+          <label>预测文件 (CSV)</label>
+          <div class="file-input-wrapper">
+            <input type="file" id="submit-prediction" accept=".csv">
+          </div>
+        </div>
+        <div class="submit-area">
+          <label>代码文件 (可选)</label>
+          <div class="file-input-wrapper">
+            <input type="file" id="submit-code" accept=".py,.ipynb,.zip">
+          </div>
+        </div>
+        <div class="submit-area">
+          <label>提交说明</label>
+          <input type="text" id="submit-desc" placeholder="简要说明本次改动" style="width:100%;padding:8px 12px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);font-size:.85rem">
+        </div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:.75rem" onclick="doSubmit(${comp.id})"><i class="fas fa-paper-plane"></i> 提交</button>
+        <div id="submit-result"></div>
+      </div>
+      <div class="sidebar-card">
+        <h4><i class="fas fa-clock"></i> 提交次数</h4>
+        <div id="remaining-subs">加载中...</div>
+      </div>`;
+  } else if (!currentUser) {
+    submitHTML = `<div class="sidebar-card"><h4>提交预测</h4><p style="color:var(--text-muted);font-size:.85rem">请先 <a href="#" onclick="showModal('login')">登录</a> 后提交</p></div>`;
+  }
+
+  let datasetsHTML = '';
+  if (comp.dataset_files && comp.dataset_files.length > 0) {
+    datasetsHTML = `<div class="sidebar-card"><h4><i class="fas fa-database"></i> 数据集</h4><ul class="dataset-list">${
+      comp.dataset_files.map(f => `<li><a href="${API}/competitions/${comp.id}/datasets/${f}" target="_blank"><i class="fas fa-download"></i> ${f}</a></li>`).join('')
+    }</ul></div>`;
+  }
+
+  document.getElementById('comp-detail-content').innerHTML = `
+    <div style="margin-bottom:1rem"><a href="#" onclick="showPage('competitions')" style="color:var(--text-muted);font-size:.9rem"><i class="fas fa-arrow-left"></i> 返回竞赛列表</a></div>
+    <div class="comp-header">
+      <h1>${comp.title}</h1>
+      <div class="meta">
+        <span class="card-status status-${comp.status}" style="position:static">${statusMap[comp.status]}</span>
+        <span><i class="fas fa-chart-line"></i> ${comp.metric} (${dirMap[comp.metric_direction]})</span>
+        <span><i class="fas fa-users"></i> ${comp.participant_count || 0} 参赛者</span>
+        <span><i class="fas fa-book"></i> ${comp.lectures || ''}</span>
+        ${comp.top_score != null ? `<span><i class="fas fa-crown"></i> 最高分: <span class="lb-score">${comp.top_score}</span></span>` : ''}
+      </div>
+    </div>
+    <div class="comp-body">
+      <div>
+        <div class="comp-desc">
+          <h3>竞赛说明</h3>
+          <p>${comp.description}</p>
+        </div>
+        <div class="comp-desc" style="margin-top:1rem">
+          <h3>我的提交历史</h3>
+          <div id="my-subs"><div class="loading"><div class="spinner"></div>加载中...</div></div>
+        </div>
+      </div>
+      <div class="comp-sidebar">
+        <div class="sidebar-card">
+          <h4>评估指标</h4>
+          <div class="metric">${comp.metric}</div>
+          <div class="metric-label">${dirMap[comp.metric_direction]}</div>
+          ${comp.baseline_score ? `<div style="margin-top:.5rem;font-size:.85rem;color:var(--text-muted)">基线: ${comp.baseline_score}</div>` : ''}
+        </div>
+        ${datasetsHTML}
+        ${submitHTML}
+      </div>
+    </div>`;
+
+  showPage('comp-detail');
+
+  // Load submission data
+  if (currentUser) {
+    loadMySubmissions(comp.id);
+    loadRemaining(comp.id);
+  }
+}
+
+async function doSubmit(compId) {
+  const predFile = document.getElementById('submit-prediction').files[0];
+  if (!predFile) { toast('请选择预测文件', 'error'); return; }
+
+  const formData = new FormData();
+  formData.append('prediction', predFile);
+
+  const codeFile = document.getElementById('submit-code').files[0];
+  if (codeFile) formData.append('code', codeFile);
+
+  const desc = document.getElementById('submit-desc').value;
+  if (desc) formData.append('description', desc);
+
+  try {
+    const res = await apiFetch(`/submissions/${compId}/submit`, { method: 'POST', body: formData });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || '提交失败');
+
+    const resultDiv = document.getElementById('submit-result');
+    if (data.public_score != null) {
+      resultDiv.innerHTML = `<div class="submit-result success"><i class="fas fa-check-circle"></i> 提交成功！分数: <strong>${data.public_score}</strong> | 今日剩余: ${data.remaining_submissions_today} 次</div>`;
+    } else {
+      resultDiv.innerHTML = `<div class="submit-result error"><i class="fas fa-times-circle"></i> ${data.error_message}</div>`;
+    }
+    loadMySubmissions(compId);
+    loadRemaining(compId);
+  } catch(e) {
+    document.getElementById('submit-result').innerHTML = `<div class="submit-result error">${e.message}</div>`;
+  }
+}
+
+async function loadMySubmissions(compId) {
+  try {
+    const res = await apiFetch(`/submissions/${compId}/my`);
+    const subs = await res.json();
+    const el = document.getElementById('my-subs');
+    if (!subs.length) { el.innerHTML = '<p style="color:var(--text-muted);font-size:.85rem">暂无提交</p>'; return; }
+    el.innerHTML = `<table class="sub-table"><thead><tr><th>时间</th><th>分数</th><th>状态</th><th>说明</th></tr></thead><tbody>${
+      subs.map(s => `<tr><td>${new Date(s.created_at).toLocaleString()}</td><td class="lb-score">${s.public_score ?? '-'}</td><td>${s.is_valid ? '<span class="badge badge-approved">有效</span>' : '<span class="badge badge-rejected">无效</span>'}</td><td style="color:var(--text-muted);font-size:.8rem">${s.description || s.error_message || ''}</td></tr>`).join('')
+    }</tbody></table>`;
+  } catch(e) {
+    document.getElementById('my-subs').innerHTML = '<p style="color:var(--text-muted);font-size:.85rem">请登录后查看</p>';
+  }
+}
+
+async function loadRemaining(compId) {
+  try {
+    const res = await apiFetch(`/submissions/${compId}/remaining`);
+    const data = await res.json();
+    document.getElementById('remaining-subs').innerHTML = `
+      <div style="font-size:.85rem;color:var(--text-secondary)">
+        今日剩余: <strong style="color:var(--accent-green)">${data.remaining_today}</strong> / ${data.max_per_day}<br>
+        总剩余: <strong style="color:var(--accent-blue)">${data.remaining_total}</strong> / ${data.max_total}
+      </div>`;
+  } catch(e) {}
+}
+
+// ===== Leaderboard =====
+async function loadLeaderboard() {
+  try {
+    const res = await apiFetch('/competitions');
+    competitions = await res.json();
+  } catch(e) {
+    competitions = getDemoCompetitions();
+  }
+
+  const tabs = document.getElementById('lb-tabs');
+  tabs.innerHTML = competitions.map((c, i) =>
+    `<div class="tab ${i === 0 ? 'active' : ''}" onclick="switchLbTab(${c.id}, this)">${c.title.replace(/[^\w\s\u4e00-\u9fff]/g,'').trim().substring(0,8)}</div>`
+  ).join('');
+
+  if (competitions.length) switchLbTab(competitions[0].id, tabs.firstChild);
+}
+
+async function switchLbTab(compId, el) {
+  document.querySelectorAll('#lb-tabs .tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  const body = document.getElementById('lb-body');
+  const loading = document.getElementById('lb-loading');
+  const empty = document.getElementById('lb-empty');
+
+  body.innerHTML = '';
+  loading.style.display = 'flex';
+  empty.style.display = 'none';
+
+  try {
+    const res = await apiFetch(`/leaderboard/${compId}`);
+    const entries = await res.json();
+    loading.style.display = 'none';
+    if (!entries.length) { empty.style.display = 'block'; return; }
+
+    body.innerHTML = entries.map(e => {
+      const rankClass = e.rank === 1 ? 'gold' : e.rank === 2 ? 'silver' : e.rank === 3 ? 'bronze' : '';
+      return `<tr>
+        <td class="lb-rank ${rankClass}">${e.rank <= 3 ? ['🥇','🥈','🥉'][e.rank-1] : e.rank}</td>
+        <td><div class="lb-user"><div class="lb-avatar" style="background:${e.avatar_color}">${e.name[0]}</div><div><div style="font-weight:600">${e.name}</div>${e.team ? `<div style="font-size:.75rem;color:var(--text-muted)">${e.team}</div>` : ''}</div></div></td>
+        <td class="lb-score">${e.best_score}</td>
+        <td>${e.submission_count}</td>
+        <td style="color:var(--text-muted);font-size:.8rem">${e.last_submission_time ? new Date(e.last_submission_time).toLocaleDateString() : '-'}</td>
+      </tr>`;
+    }).join('');
+  } catch(e) {
+    loading.style.display = 'none';
+    empty.style.display = 'block';
+  }
+}
+
+// ===== Syllabus =====
+function renderSyllabus() {
+  const lectures = [
+    {week:'Week 1-2', title:'Lecture 1-2: 线性回归与优化', desc:'什么是机器学习、线性回归、梯度下降、正则化 (L1/L2)', comp:'🏠 房价预测挑战赛'},
+    {week:'Week 3-4', title:'Lecture 3-4: SVM 与分类', desc:'支持向量机、核方法、Softmax 分类器、多分类策略', comp:'🖼️ 图像分类对抗赛'},
+    {week:'Week 5-6', title:'Lecture 5-6: 神经网络与 CNN', desc:'神经网络、反向传播、卷积神经网络、经典架构', comp:'🔍 CIFAR-10 挑战赛'},
+    {week:'Week 7-8', title:'Lecture 7-8: 决策树与集成学习', desc:'决策树、偏差-方差分解、Bagging、Boosting', comp:'🎯 集成学习擂台赛'},
+    {week:'Week 9-10', title:'Lecture 9-10: 概率模型与聚类', desc:'朴素贝叶斯、概率图模型、k-Means、EM 算法', comp:'📝 文本分类 & 聚类赛'},
+    {week:'Week 11-12', title:'Lecture 11-12: RNN 与强化学习', desc:'循环神经网络、LSTM、强化学习、Q-Learning、DQN', comp:'🎮 序列预测 & RL赛'},
+  ];
+  document.getElementById('syllabus-timeline').innerHTML = lectures.map(l =>
+    `<div class="timeline-item">
+      <div class="timeline-week">${l.week}</div>
+      <div class="timeline-title">${l.title}</div>
+      <div class="timeline-desc">${l.desc}</div>
+      <div class="timeline-comp"><i class="fas fa-trophy"></i> ${l.comp}</div>
+    </div>`
+  ).join('');
+}
+
+// ===== Admin =====
+async function loadAdmin() {
+  if (!currentUser || currentUser.role !== 'admin') { showPage('home'); return; }
+  try {
+    const res = await apiFetch('/admin/stats');
+    const stats = await res.json();
+    document.getElementById('admin-stats').innerHTML = `
+      <div class="admin-stat"><div class="num" style="color:var(--accent-blue)">${stats.total_users}</div><div class="label">注册学生</div></div>
+      <div class="admin-stat"><div class="num" style="color:var(--accent-green)">${stats.approved_users}</div><div class="label">已通过</div></div>
+      <div class="admin-stat"><div class="num" style="color:var(--accent-orange)">${stats.pending_users}</div><div class="label">待审核</div></div>
+      <div class="admin-stat"><div class="num" style="color:var(--accent-purple)">${stats.total_submissions}</div><div class="label">总提交</div></div>
+      <div class="admin-stat"><div class="num" style="color:var(--accent-cyan)">${stats.active_competitions}</div><div class="label">进行中竞赛</div></div>`;
+  } catch(e) {}
+  loadAdminUsers();
+}
+
+async function loadAdminUsers() {
+  try {
+    const search = document.getElementById('user-search')?.value || '';
+    const res = await apiFetch(`/admin/users?search=${search}`);
+    const users = await res.json();
+    document.getElementById('admin-users-body').innerHTML = users.map(u =>
+      `<tr>
+        <td><input type="checkbox" class="user-checkbox" value="${u.id}"></td>
+        <td style="font-weight:600">${u.name}</td>
+        <td>${u.student_id}</td>
+        <td style="color:var(--text-muted)">${u.email}</td>
+        <td><span class="badge badge-${u.status}">${u.status}</span></td>
+        <td>${u.submission_count}</td>
+        <td>${u.status === 'pending' ? `<button class="btn btn-success btn-sm" onclick="approveUser(${u.id},'approve')">通过</button> <button class="btn btn-danger btn-sm" onclick="approveUser(${u.id},'reject')">拒绝</button>` : '-'}</td>
+      </tr>`
+    ).join('');
+  } catch(e) {}
+}
+
+async function approveUser(userId, action) {
+  try {
+    await apiFetch('/admin/users/approve', {method:'POST', body:{user_id:userId, action}});
+    toast(action === 'approve' ? '已通过' : '已拒绝', 'success');
+    loadAdminUsers();
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+async function batchApprove() {
+  const checked = [...document.querySelectorAll('.user-checkbox:checked')].map(c => parseInt(c.value));
+  if (!checked.length) { toast('请先选择用户', 'error'); return; }
+  try {
+    await apiFetch('/admin/users/batch-approve', {method:'POST', body:checked});
+    toast(`已批量通过 ${checked.length} 个用户`, 'success');
+    loadAdminUsers();
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+function toggleAllUsers(el) {
+  document.querySelectorAll('.user-checkbox').forEach(c => c.checked = el.checked);
+}
+
+async function doCreateComp() {
+  const body = {
+    title: document.getElementById('comp-title').value,
+    slug: document.getElementById('comp-slug').value,
+    subtitle: document.getElementById('comp-subtitle').value,
+    description: document.getElementById('comp-desc').value,
+    metric: document.getElementById('comp-metric').value,
+    metric_direction: document.getElementById('comp-direction').value,
+    max_submissions_per_day: parseInt(document.getElementById('comp-max-day').value),
+    max_submissions_total: parseInt(document.getElementById('comp-max-total').value),
+    lectures: document.getElementById('comp-lectures').value,
+  };
+  try {
+    await apiFetch('/competitions', {method:'POST', body});
+    hideModal('create-comp');
+    toast('竞赛创建成功', 'success');
+    loadAdmin();
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+async function exportGrades() {
+  try {
+    const res = await apiFetch('/admin/grades/export');
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'INT305_grades.csv'; a.click();
+    URL.revokeObjectURL(url);
+    toast('成绩表已导出', 'success');
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+function switchAdminTab(tab, el) {
+  document.querySelectorAll('#admin-tabs .tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.admin-panel').forEach(p => p.style.display = 'none');
+  document.getElementById(`admin-${tab}`).style.display = 'block';
+  if (tab === 'recent') loadAdminRecent();
+  if (tab === 'comps') loadAdminComps();
+  if (tab === 'tasks') loadAdminTasks();
+}
+
+async function loadAdminRecent() {
+  try {
+    const res = await apiFetch('/admin/submissions/recent');
+    const subs = await res.json();
+    document.getElementById('admin-recent-body').innerHTML = subs.map(s =>
+      `<tr><td style="font-size:.8rem;color:var(--text-muted)">${new Date(s.created_at).toLocaleString()}</td><td>${s.student_name}</td><td>${s.competition_title}</td><td class="lb-score">${s.public_score ?? '-'}</td><td>${s.is_valid ? '<span class="badge badge-approved">有效</span>' : '<span class="badge badge-rejected">无效</span>'}</td></tr>`
+    ).join('');
+  } catch(e) {}
+}
+
+async function loadAdminComps() {
+  try {
+    const res = await apiFetch('/competitions');
+    const comps = await res.json();
+    const statusMap = {live:'进行中',upcoming:'即将开始',ended:'已结束'};
+    document.getElementById('admin-comps-body').innerHTML = comps.map(c =>
+      `<tr><td style="font-weight:600">${c.title}</td><td><span class="badge badge-${c.status === 'live' ? 'approved' : c.status === 'upcoming' ? 'pending' : 'rejected'}">${statusMap[c.status]}</span></td><td>${c.metric}</td><td>${c.participant_count}</td><td>-</td><td><button class="btn btn-outline btn-sm" onclick="showCompDetail(${c.id})">查看</button></td></tr>`
+    ).join('');
+  } catch(e) {}
+}
+
+// ===== Demo Data (fallback when API not available) =====
+function getDemoCompetitions() {
+  return [
+    {id:1, slug:'comp1-house-price', title:'🏠 房价预测挑战赛', subtitle:'Linear Regression & Regularization', description:'使用线性回归和正则化方法预测房屋价格。', lectures:'Lecture 1-2', week:'Week 1-2', metric:'RMSE', metric_direction:'lower', baseline_score:0.15, status:'live', participant_count:42, top_score:0.089, tags:['回归','线性模型','正则化']},
+    {id:2, slug:'comp2-image-classification', title:'🖼️ 图像分类对抗赛', subtitle:'SVM & Softmax Classifier', description:'使用 SVM 和 Softmax 分类器对图像进行分类。', lectures:'Lecture 3-4', week:'Week 3-4', metric:'Accuracy', metric_direction:'higher', baseline_score:0.65, status:'upcoming', participant_count:0, tags:['分类','SVM']},
+    {id:3, slug:'comp3-cifar10', title:'🔍 CIFAR-10 挑战赛', subtitle:'Convolutional Neural Network', description:'使用 CNN 对 CIFAR-10 进行分类。', lectures:'Lecture 5-6', week:'Week 5-6', metric:'Accuracy', metric_direction:'higher', baseline_score:0.70, status:'upcoming', participant_count:0, tags:['CNN','深度学习']},
+    {id:4, slug:'comp4-ensemble', title:'🎯 集成学习擂台赛', subtitle:'Decision Trees, Bagging & Boosting', description:'使用集成方法构建强大分类器。', lectures:'Lecture 7-8', week:'Week 7-8', metric:'AUC-ROC', metric_direction:'higher', baseline_score:0.80, status:'upcoming', participant_count:0, tags:['集成学习','Boosting']},
+    {id:5, slug:'comp5-text-clustering', title:'📝 文本分类 & 聚类赛', subtitle:'Naive Bayes, k-Means & EM', description:'朴素贝叶斯分类与聚类分析。', lectures:'Lecture 9-10', week:'Week 9-10', metric:'F1', metric_direction:'higher', baseline_score:0.75, status:'upcoming', participant_count:0, tags:['NLP','聚类']},
+    {id:6, slug:'comp6-sequence-rl', title:'🎮 序列预测 & RL赛', subtitle:'RNN/LSTM & Reinforcement Learning', description:'RNN 序列预测与强化学习。', lectures:'Lecture 11-12', week:'Week 11-12', metric:'MAE', metric_direction:'lower', baseline_score:0.20, status:'upcoming', participant_count:0, tags:['RNN','强化学习']},
+  ];
+}
+
+// ===== UI Helpers =====
+function showModal(name) { document.getElementById(`modal-${name}`).classList.add('active'); }
+function hideModal(name) { document.getElementById(`modal-${name}`).classList.remove('active'); }
+
+function toast(msg, type='info') {
+  const el = document.createElement('div');
+  el.className = `toast toast-${type}`;
+  el.textContent = msg;
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+
+// ===== Init =====
+document.addEventListener('DOMContentLoaded', () => {
+  updateNav();
+  loadHomeData();
+  renderSyllabus();
+
+  // Close modals on overlay click
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('active'); });
+  });
+});
+
+
+// ===== Admin Task Review =====
+async function loadAdminTasks() {
+  try {
+    const res = await apiFetch('/market/tasks/pending/list');
+    if (!res.ok) { document.getElementById('admin-pending-tasks').innerHTML = '<p style="color:var(--text-muted)">加载失败</p>'; return; }
+    const tasks = await res.json();
+    document.getElementById('admin-pending-tasks').innerHTML = tasks.length ? tasks.map(t => `
+      <div class="card" style="cursor:default;margin-bottom:1rem">
+        <div style="display:flex;justify-content:space-between;align-items:start">
+          <div>
+            <h3>${t.title}</h3>
+            <div class="subtitle">${CATEGORY_LABELS[t.category] || t.category} · ${DIFFICULTY_LABELS[t.difficulty] || t.difficulty}</div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-success btn-sm" onclick="reviewAdminTask(${t.id},'approve')"><i class="fas fa-check"></i> 通过</button>
+            <button class="btn btn-danger btn-sm" onclick="reviewAdminTask(${t.id},'reject')"><i class="fas fa-times"></i> 拒绝</button>
+          </div>
+        </div>
+      </div>
+    `).join('') : '<p style="color:var(--text-muted)">暂无待审核任务</p>';
+  } catch(e) { document.getElementById('admin-pending-tasks').innerHTML = '<p style="color:var(--text-muted)">加载失败</p>'; }
+}
+
+async function reviewAdminTask(taskId, action) {
+  const comment = action === 'reject' ? (prompt('拒绝原因：') || '') : '';
+  try {
+    const res = await apiFetch(`/market/tasks/${taskId}/review`, {
+      method: 'POST',
+      body: JSON.stringify({ action, comment })
+    });
+    if (!res.ok) { const d = await res.json(); throw new Error(d.detail || '操作失败'); }
+    toast(action === 'approve' ? '任务已通过审核' : '任务已拒绝', 'success');
+    loadAdminTasks();
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+// ===== TASK MARKET =====
+let marketTasks = [];
+let currentMarketFilter = 'all';
+let currentTaskId = null;
+
+const CATEGORY_LABELS = {
+  data_pipeline: '数据预处理', model_training: '模型训练', visualization: '可视化',
+  api_service: 'API/Docker', baseline_repo: '基线复现', testing_bench: '测试/Bench', other: '其他'
+};
+const DIFFICULTY_LABELS = { easy: '简单', medium: '中等', hard: '困难' };
+const TASK_STATUS_LABELS = {
+  pending: '待审核', open: '开放中', in_progress: '进行中',
+  under_review: '验收中', completed: '已完成', rejected_admin: '审核未通过', cancelled: '已取消'
+};
+
+async function loadMarket() {
+  document.getElementById('market-loading').style.display = 'flex';
+  document.getElementById('market-empty').style.display = 'none';
+  try {
+    const res = await apiFetch('/market/tasks');
+    if (res.ok) marketTasks = await res.json();
+    else marketTasks = [];
+  } catch(e) { marketTasks = []; }
+  document.getElementById('market-loading').style.display = 'none';
+  renderMarketStats();
+  filterMarket('all', document.querySelector('#market-filter-tabs .tab.active'));
+}
+
+async function renderMarketStats() {
+  try {
+    const res = await apiFetch('/market/stats');
+    if (!res.ok) return;
+    const s = await res.json();
+    document.getElementById('market-stats').innerHTML = `
+      <div class="admin-stat"><div class="num" style="color:var(--accent-green)">${s.open_tasks}</div><div class="label">开放中</div></div>
+      <div class="admin-stat"><div class="num" style="color:var(--accent-blue)">${s.in_progress}</div><div class="label">进行中</div></div>
+      <div class="admin-stat"><div class="num" style="color:var(--accent-purple)">${s.completed}</div><div class="label">已完成</div></div>
+    `;
+  } catch(e) {}
+}
+
+function filterMarket(status, el) {
+  currentMarketFilter = status;
+  if (el) {
+    document.querySelectorAll('#market-filter-tabs .tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+  }
+  const catFilter = document.getElementById('market-category-filter').value;
+  const diffFilter = document.getElementById('market-difficulty-filter').value;
+  let filtered = marketTasks;
+  if (status !== 'all') filtered = filtered.filter(t => t.status === status);
+  if (catFilter) filtered = filtered.filter(t => t.category === catFilter);
+  if (diffFilter) filtered = filtered.filter(t => t.difficulty === diffFilter);
+  renderMarketTasks(filtered);
+}
+
+function renderMarketTasks(tasks) {
+  const grid = document.getElementById('market-tasks-grid');
+  if (!tasks.length) {
+    grid.innerHTML = '';
+    document.getElementById('market-empty').style.display = 'block';
+    return;
+  }
+  document.getElementById('market-empty').style.display = 'none';
+  grid.innerHTML = '<div class="grid-3">' + tasks.map(t => `
+    <div class="card" onclick="showTaskDetail(${t.id})">
+      <div class="card-status status-${t.status === 'open' ? 'live' : t.status === 'completed' ? 'ended' : 'upcoming'}">${TASK_STATUS_LABELS[t.status] || t.status}</div>
+      <h3>${t.title}</h3>
+      <div class="subtitle">${CATEGORY_LABELS[t.category] || t.category} · ${DIFFICULTY_LABELS[t.difficulty] || t.difficulty}${t.estimated_hours ? ' · ' + t.estimated_hours + 'h' : ''}</div>
+      <p class="desc">${t.description}</p>
+      <div class="card-tags">${(t.tags || []).map(tag => `<span class="tag">${tag}</span>`).join('')}</div>
+      <div class="card-meta">
+        <span><i class="fas fa-user"></i> ${t.owner_name || '匿名'}</span>
+        <span><i class="fas fa-users"></i> ${t.application_count} 人申请</span>
+        ${t.deadline ? `<span><i class="fas fa-clock"></i> ${new Date(t.deadline).toLocaleDateString()}</span>` : ''}
+      </div>
+    </div>
+  `).join('') + '</div>';
+}
+
+async function showTaskDetail(taskId) {
+  currentTaskId = taskId;
+  try {
+    const res = await apiFetch(`/market/tasks/${taskId}`);
+    if (!res.ok) throw new Error('加载失败');
+    const t = await res.json();
+    const isOwner = currentUser && currentUser.id === t.owner_id;
+    const isOpen = t.status === 'open';
+    const div = document.getElementById('task-detail-content');
+    div.innerHTML = `
+      <div style="margin-bottom:1rem"><a href="#" onclick="showPage('market')" style="color:var(--text-muted);font-size:.9rem"><i class="fas fa-arrow-left"></i> 返回任务市场</a></div>
+      <div class="comp-header">
+        <h1>${t.title}</h1>
+        <div class="meta">
+          <span><i class="fas fa-tag"></i> ${CATEGORY_LABELS[t.category] || t.category}</span>
+          <span><i class="fas fa-signal"></i> ${DIFFICULTY_LABELS[t.difficulty] || t.difficulty}</span>
+          <span><i class="fas fa-user"></i> ${t.owner_name || '匿名'}${t.owner_team ? ' (' + t.owner_team + ')' : ''}</span>
+          <span><i class="fas fa-clock"></i> ${t.estimated_hours ? t.estimated_hours + 'h' : '未估'}</span>
+          ${t.deadline ? `<span><i class="fas fa-calendar"></i> 截止 ${new Date(t.deadline).toLocaleString()}</span>` : ''}
+        </div>
+      </div>
+      <div class="comp-body">
+        <div class="comp-desc">
+          <h3>任务描述</h3><p>${t.description}</p>
+          ${t.thesis_title ? `<h3 style="margin-top:1.5rem">毕设信息</h3><p>题目：${t.thesis_title}${t.thesis_advisor ? '<br>导师：' + t.thesis_advisor : ''}</p>` : ''}
+          <h3 style="margin-top:1.5rem">交付物</h3>
+          <ul style="color:var(--text-secondary);font-size:.9rem;padding-left:1.5rem">${(t.deliverables || []).map(d => `<li>${d}</li>`).join('')}</ul>
+          <h3 style="margin-top:1.5rem">验收标准</h3><p>${t.acceptance_criteria}</p>
+          ${t.data_description ? `<h3 style="margin-top:1.5rem">数据说明</h3><p>${t.data_description}</p>` : ''}
+          ${(t.resource_links && t.resource_links.length) ? `<h3 style="margin-top:1.5rem">资源链接</h3><ul style="color:var(--accent-cyan);font-size:.9rem;padding-left:1.5rem">${t.resource_links.map(l => `<li><a href="${l}" target="_blank">${l}</a></li>`).join('')}</ul>` : ''}
+        </div>
+        <div class="comp-sidebar">
+          <div class="sidebar-card">
+            <h4>任务状态</h4>
+            <div style="font-size:1.2rem;font-weight:700;color:${t.status === 'open' ? 'var(--accent-green)' : t.status === 'completed' ? 'var(--text-muted)' : 'var(--accent-blue)'}">${TASK_STATUS_LABELS[t.status] || t.status}</div>
+            <div style="font-size:.8rem;color:var(--text-muted);margin-top:.5rem">${t.application_count} 人申请</div>
+          </div>
+          ${!isOwner && isOpen && currentUser ? `
+          <div class="sidebar-card">
+            <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="currentTaskId=${t.id};showModal('apply-task')"><i class="fas fa-hand-paper"></i> 申请接单</button>
+          </div>` : ''}
+          ${isOwner ? `
+          <div class="sidebar-card">
+            <h4>出题者操作</h4>
+            <button class="btn btn-outline btn-sm" style="width:100%;justify-content:center;margin-bottom:.5rem" onclick="loadTaskApplications(${t.id})"><i class="fas fa-users"></i> 查看申请</button>
+            <button class="btn btn-outline btn-sm" style="width:100%;justify-content:center" onclick="loadTaskDeliveries(${t.id})"><i class="fas fa-box"></i> 查看交付</button>
+          </div>` : ''}
+          <div class="sidebar-card">
+            <h4>标签</h4>
+            <div class="card-tags">${(t.tags || []).map(tag => `<span class="tag">${tag}</span>`).join('') || '<span style="color:var(--text-muted);font-size:.8rem">无标签</span>'}</div>
+          </div>
+        </div>
+      </div>
+      <div id="task-applications-section" style="margin-top:2rem"></div>
+      <div id="task-deliveries-section" style="margin-top:2rem"></div>
+    `;
+    showPage('task-detail');
+  } catch(e) { toast('加载任务详情失败: ' + e.message, 'error'); }
+}
+
+async function loadTaskApplications(taskId) {
+  try {
+    const res = await apiFetch(`/market/tasks/${taskId}/applications`);
+    if (!res.ok) throw new Error('加载失败');
+    const apps = await res.json();
+    const section = document.getElementById('task-applications-section');
+    section.innerHTML = `
+      <h3 style="margin-bottom:1rem">申请列表 (${apps.length})</h3>
+      ${apps.length ? apps.map(a => `
+        <div class="card" style="cursor:default;margin-bottom:1rem">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div><strong>${a.applicant_name || '匿名'}</strong> <span style="color:var(--text-muted);font-size:.8rem">${a.applicant_team ? '(' + a.applicant_team + ')' : ''} ${a.applicant_credit ? '信用分:' + a.applicant_credit : ''}</span></div>
+            <span class="badge badge-${a.status === 'accepted' ? 'approved' : a.status === 'rejected' ? 'rejected' : 'pending'}">${a.status === 'pending' ? '待处理' : a.status === 'accepted' ? '已接受' : '已拒绝'}</span>
+          </div>
+          ${a.message ? `<p style="color:var(--text-secondary);font-size:.85rem;margin-top:.5rem">${a.message}</p>` : ''}
+          ${a.proposed_approach ? `<p style="color:var(--accent-cyan);font-size:.85rem;margin-top:.25rem"><strong>方案：</strong>${a.proposed_approach}</p>` : ''}
+          ${a.status === 'pending' ? `
+          <div style="margin-top:.75rem;display:flex;gap:8px">
+            <button class="btn btn-success btn-sm" onclick="handleApplication(${taskId},${a.id},'accept')"><i class="fas fa-check"></i> 接受</button>
+            <button class="btn btn-danger btn-sm" onclick="handleApplication(${taskId},${a.id},'reject')"><i class="fas fa-times"></i> 拒绝</button>
+          </div>` : ''}
+        </div>
+      `).join('') : '<p style="color:var(--text-muted)">暂无申请</p>'}
+    `;
+  } catch(e) { toast('加载申请列表失败', 'error'); }
+}
+
+async function loadTaskDeliveries(taskId) {
+  try {
+    const res = await apiFetch(`/market/tasks/${taskId}/deliveries`);
+    if (!res.ok) throw new Error('加载失败');
+    const dels = await res.json();
+    const section = document.getElementById('task-deliveries-section');
+    section.innerHTML = `
+      <h3 style="margin-bottom:1rem">交付列表 (${dels.length})</h3>
+      ${dels.length ? dels.map(d => `
+        <div class="card" style="cursor:default;margin-bottom:1rem">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div><strong>${d.applicant_name || '匿名'}</strong></div>
+            <span class="badge badge-${d.review_status === 'accepted' ? 'approved' : d.review_status === 'rejected' ? 'rejected' : 'pending'}">${d.review_status === 'submitted' ? '待验收' : d.review_status === 'accepted' ? '已通过' : d.review_status === 'revision' ? '需修改' : '未通过'}</span>
+          </div>
+          ${d.code_url ? `<p style="font-size:.85rem;margin-top:.5rem"><i class="fas fa-code"></i> <a href="${d.code_url}" target="_blank">${d.code_url}</a></p>` : ''}
+          ${d.demo_url ? `<p style="font-size:.85rem"><i class="fas fa-globe"></i> <a href="${d.demo_url}" target="_blank">${d.demo_url}</a></p>` : ''}
+          ${d.documentation ? `<p style="color:var(--text-secondary);font-size:.85rem;margin-top:.25rem">${d.documentation}</p>` : ''}
+          ${d.review_comment ? `<p style="color:var(--accent-orange);font-size:.85rem;margin-top:.25rem"><strong>评语：</strong>${d.review_comment}</p>` : ''}
+          ${d.quality_score ? `<p style="font-size:.85rem">质量评分：${'★'.repeat(d.quality_score)}${'☆'.repeat(5-d.quality_score)}</p>` : ''}
+          ${d.review_status === 'submitted' ? `
+          <div style="margin-top:.75rem;display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-success btn-sm" onclick="reviewDelivery(${d.id},'accept')"><i class="fas fa-check"></i> 通过</button>
+            <button class="btn btn-outline btn-sm" onclick="reviewDelivery(${d.id},'revision')"><i class="fas fa-edit"></i> 需修改</button>
+            <button class="btn btn-danger btn-sm" onclick="reviewDelivery(${d.id},'reject')"><i class="fas fa-times"></i> 不通过</button>
+          </div>` : ''}
+        </div>
+      `).join('') : '<p style="color:var(--text-muted)">暂无交付</p>'}
+    `;
+  } catch(e) { toast('加载交付列表失败', 'error'); }
+}
+
+async function handleApplication(taskId, appId, action) {
+  try {
+    const res = await apiFetch(`/market/applications/${appId}/action`, {
+      method: 'POST',
+      body: JSON.stringify({ action })
+    });
+    if (!res.ok) { const d = await res.json(); throw new Error(d.detail || '操作失败'); }
+    toast(action === 'accept' ? '已接受申请' : '已拒绝申请', 'success');
+    loadTaskApplications(taskId);
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+async function reviewDelivery(deliveryId, action) {
+  const comment = prompt('验收评语（可选）：') || '';
+  const score = action === 'accept' ? parseInt(prompt('质量评分 1-5：', '4') || '4') : null;
+  try {
+    const res = await apiFetch(`/market/deliveries/${deliveryId}/review`, {
+      method: 'PUT',
+      body: JSON.stringify({ action, comment, quality_score: score })
+    });
+    if (!res.ok) { const d = await res.json(); throw new Error(d.detail || '操作失败'); }
+    toast('验收完成', 'success');
+    if (currentTaskId) { loadTaskDeliveries(currentTaskId); }
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+// ===== Post Task =====
+async function doPostTask() {
+  if (!currentUser) { toast('请先登录', 'error'); return; }
+  const title = document.getElementById('task-title').value.trim();
+  const description = document.getElementById('task-description').value.trim();
+  const deliverables = document.getElementById('task-deliverables').value.trim().split('\n').filter(x => x);
+  const acceptance = document.getElementById('task-acceptance').value.trim();
+  if (!title || !description || !deliverables.length || !acceptance) {
+    document.getElementById('task-post-error').textContent = '请填写所有必填项';
+    return;
+  }
+  const body = {
+    title, description, deliverables,
+    acceptance_criteria: acceptance,
+    category: document.getElementById('task-category').value,
+    difficulty: document.getElementById('task-difficulty').value,
+    thesis_title: document.getElementById('task-thesis-title').value.trim() || null,
+    thesis_advisor: document.getElementById('task-thesis-advisor').value.trim() || null,
+    estimated_hours: parseInt(document.getElementById('task-hours').value) || null,
+    deadline: document.getElementById('task-deadline').value || null,
+    data_description: document.getElementById('task-data-desc').value.trim() || null,
+    data_availability: document.getElementById('task-data-avail').value,
+    tags: document.getElementById('task-tags').value.split(',').map(s => s.trim()).filter(x => x) || null,
+    resource_links: document.getElementById('task-links').value.trim().split('\n').filter(x => x) || null,
+  };
+  try {
+    const res = await apiFetch('/market/tasks', { method: 'POST', body: JSON.stringify(body) });
+    if (!res.ok) { const d = await res.json(); throw new Error(d.detail || '发布失败'); }
+    hideModal('post-task');
+    toast('任务已提交，等待管理员审核', 'success');
+    loadMarket();
+  } catch(e) { document.getElementById('task-post-error').textContent = e.message; }
+}
+
+// ===== Apply Task =====
+async function doApplyTask() {
+  if (!currentUser || !currentTaskId) { toast('请先登录', 'error'); return; }
+  const body = {
+    message: document.getElementById('apply-message').value.trim() || null,
+    proposed_approach: document.getElementById('apply-approach').value.trim() || null,
+  };
+  try {
+    const res = await apiFetch(`/market/tasks/${currentTaskId}/apply`, { method: 'POST', body: JSON.stringify(body) });
+    if (!res.ok) { const d = await res.json(); throw new Error(d.detail || '申请失败'); }
+    hideModal('apply-task');
+    toast('申请已提交', 'success');
+  } catch(e) { document.getElementById('apply-error').textContent = e.message; }
+}
+
+// ===== Deliver Task =====
+async function doDeliverTask() {
+  if (!currentUser || !currentTaskId) { toast('请先登录', 'error'); return; }
+  const body = {
+    code_url: document.getElementById('deliver-code-url').value.trim() || null,
+    demo_url: document.getElementById('deliver-demo-url').value.trim() || null,
+    documentation: document.getElementById('deliver-docs').value.trim() || null,
+  };
+  if (!body.code_url && !body.documentation) {
+    document.getElementById('deliver-error').textContent = '请至少填写代码链接或文档说明';
+    return;
+  }
+  try {
+    const res = await apiFetch(`/market/tasks/${currentTaskId}/deliver`, { method: 'POST', body: JSON.stringify(body) });
+    if (!res.ok) { const d = await res.json(); throw new Error(d.detail || '提交失败'); }
+    hideModal('deliver-task');
+    toast('交付已提交', 'success');
+  } catch(e) { document.getElementById('deliver-error').textContent = e.message; }
+}
+
+// ===== My Tasks =====
+async function loadMyTasks() {
+  const content = document.getElementById('my-tasks-content');
+  content.innerHTML = '<div class="loading"><div class="spinner"></div>加载中...</div>';
+  try {
+    const [postedRes, appliedRes, creditRes] = await Promise.all([
+      apiFetch('/market/my/posted').catch(() => null),
+      apiFetch('/market/my/applied').catch(() => null),
+      apiFetch('/market/credit/me').catch(() => null),
+    ]);
+    const posted = postedRes && postedRes.ok ? await postedRes.json() : [];
+    const applied = appliedRes && appliedRes.ok ? await appliedRes.json() : [];
+    const credit = creditRes && creditRes.ok ? await creditRes.json() : null;
+    window._myPosted = posted;
+    window._myApplied = applied;
+    window._myCredit = credit;
+    switchMyTasksTab('posted', document.querySelector('#my-tasks-tabs .tab.active'));
+  } catch(e) { content.innerHTML = '<p style="color:var(--text-muted)">加载失败</p>'; }
+}
+
+function switchMyTasksTab(tab, el) {
+  document.querySelectorAll('#my-tasks-tabs .tab').forEach(t => t.classList.remove('active'));
+  if (el) el.classList.add('active');
+  const content = document.getElementById('my-tasks-content');
+  if (tab === 'posted') {
+    const tasks = window._myPosted || [];
+    content.innerHTML = tasks.length ? tasks.map(t => `
+      <div class="card" style="cursor:pointer;margin-bottom:1rem" onclick="showTaskDetail(${t.id})">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <h3 style="padding-right:0">${t.title}</h3>
+          <span class="badge badge-${t.status === 'completed' ? 'approved' : t.status === 'open' ? 'approved' : t.status === 'pending' ? 'pending' : 'rejected'}">${TASK_STATUS_LABELS[t.status] || t.status}</span>
+        </div>
+        <div class="card-meta"><span>${CATEGORY_LABELS[t.category] || t.category}</span><span>${t.application_count} 人申请</span></div>
+      </div>
+    `).join('') : '<div class="empty-state"><i class="fas fa-clipboard-list"></i><p>你还没有发布过任务</p></div>';
+  } else if (tab === 'applied') {
+    const apps = window._myApplied || [];
+    content.innerHTML = apps.length ? apps.map(a => `
+      <div class="card" style="cursor:pointer;margin-bottom:1rem" onclick="showTaskDetail(${a.task_id})">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <h3 style="padding-right:0">${a.task_title}</h3>
+          <span class="badge badge-${a.application_status === 'accepted' ? 'approved' : a.application_status === 'rejected' ? 'rejected' : 'pending'}">${a.application_status === 'pending' ? '待处理' : a.application_status === 'accepted' ? '已接受' : '已拒绝'}</span>
+        </div>
+        <div class="card-meta"><span>${CATEGORY_LABELS[a.task_category] || a.task_category}</span></div>
+        ${a.application_status === 'accepted' ? `<button class="btn btn-primary btn-sm" style="margin-top:.5rem" onclick="event.stopPropagation();currentTaskId=${a.task_id};showModal('deliver-task')"><i class="fas fa-box"></i> 提交交付</button>` : ''}
+      </div>
+    `).join('') : '<div class="empty-state"><i class="fas fa-hand-paper"></i><p>你还没有申请过任务</p></div>';
+  } else if (tab === 'credit') {
+    const c = window._myCredit;
+    content.innerHTML = c ? `
+      <div class="admin-grid">
+        <div class="admin-stat"><div class="num" style="color:${c.score >= 80 ? 'var(--accent-green)' : c.score >= 50 ? 'var(--accent-orange)' : 'var(--accent-red)'}">${c.score}</div><div class="label">信用分</div></div>
+        <div class="admin-stat"><div class="num">${c.tasks_posted}</div><div class="label">发布任务</div></div>
+        <div class="admin-stat"><div class="num">${c.tasks_completed}</div><div class="label">完成任务</div></div>
+        <div class="admin-stat"><div class="num">${c.tasks_reviewed}</div><div class="label">验收任务</div></div>
+        <div class="admin-stat"><div class="num" style="color:var(--accent-green)">${(c.on_time_rate * 100).toFixed(0)}%</div><div class="label">按时交付率</div></div>
+        <div class="admin-stat"><div class="num" style="color:var(--accent-blue)">${(c.acceptance_rate * 100).toFixed(0)}%</div><div class="label">一次通过率</div></div>
+      </div>
+    ` : '<div class="empty-state"><i class="fas fa-star"></i><p>暂无信用记录</p></div>';
+  }
+}
+
+</script>
+</body>
+</html>
