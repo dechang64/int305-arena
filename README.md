@@ -152,3 +152,7 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000
 - **自动评分**: Python 评估脚本（RMSE, Accuracy, AUC-ROC, F1 等）
 - **前端**: 原生 HTML/CSS/JS（零依赖，易定制）
 - **部署**: Docker + Docker Compose + Nginx
+
+## 参考资源
+
+- [D21 AI 任务市场](https://zh.d21.ai/) — AI 任务众包平台，参考了其任务发布格式和验收流程设计
