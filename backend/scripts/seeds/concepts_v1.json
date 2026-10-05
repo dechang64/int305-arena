@@ -1,0 +1,233 @@
+{
+  "_meta": {
+    "name": "INT305 讲轨概念卡种子 v1",
+    "source": "《INT305 ML Arena 教学重构方案》附录 B",
+    "d2l_base": "https://zh-v2.d2l.ai/",
+    "verified_at": "2026-10-05",
+    "note_zh_ref": "d2l_ref_zh 与 d2l_url 已对照 zh-v2.d2l.ai 在线目录逐条核对。",
+    "note_en_ref": "d2l_ref_en 采用 d2l 英文第二版（与中文版同版次，编号基本对齐），上线前建议对一次英文版目录。",
+    "note_common_gaps": "common_gaps 是教师的先验标注，用于课前预判；真实卡壳点由课堂质询产生，二者会并存于卡壳聚合视图中。"
+  },
+  "concepts": [
+    {
+      "code": "C-01",
+      "title": "线性回归的梯度从哪来",
+      "d2l_ref_zh": "3.2 线性回归的从零开始实现",
+      "d2l_ref_en": "3.2 Linear Regression Implementation from Scratch",
+      "d2l_url": "https://zh-v2.d2l.ai/chapter_linear-networks/linear-regression-scratch.html",
+      "boundary": "说清损失对每个权重的求导过程，不许用「由链式法则可得」带过",
+      "common_gaps": ["把损失函数的定义与梯度的定义混为一谈", "说不清为何梯度里出现 (y_hat - y) 这个残差项", "对「求和式求导后得到均值」这一步无解释"],
+      "jargon_watchlist": ["链式法则", "偏导", "梯度"],
+      "track": "base"
+    },
+    {
+      "code": "C-02",
+      "title": "为什么 softmax 要配交叉熵",
+      "d2l_ref_zh": "3.4 softmax回归 / 3.6 softmax回归的从零开始实现",
+      "d2l_ref_en": "3.4 Softmax Regression / 3.6 Softmax Regression Implementation from Scratch",
+      "d2l_url": "https://zh-v2.d2l.ai/chapter_linear-networks/softmax-regression-scratch.html",
+      "boundary": "说清「配错了会怎样」——用平方损失配 softmax 会出什么问题",
+      "common_gaps": ["只会说「大家都这么配」", "说不出平方损失配 softmax 时梯度会被概率压小的现象", "混淆「交叉熵」与「对数似然」的关系"],
+      "jargon_watchlist": ["对数似然", "指数归一化", "交叉熵"],
+      "track": "base"
+    },
+    {
+      "code": "C-03",
+      "title": "交叉熵的梯度为什么干净",
+      "d2l_ref_zh": "3.6 softmax回归的从零开始实现",
+      "d2l_ref_en": "3.6 Softmax Regression Implementation from Scratch",
+      "d2l_url": "https://zh-v2.d2l.ai/chapter_linear-networks/softmax-regression-scratch.html",
+      "boundary": "说清梯度中「预测减真实」这个形式是怎么来的",
+      "common_gaps": ["指数与对数的抵消过程讲不完整", "把「softmax 的导数」与「交叉熵的导数」拆不开", "误以为这个简洁形式是巧合"],
+      "jargon_watchlist": ["极大似然", "梯度", "softmax"],
+      "track": "base"
+    },
+    {
+      "code": "C-04",
+      "title": "L2 正则化为什么等价于权重衰减",
+      "d2l_ref_zh": "4.5 权重衰减",
+      "d2l_ref_en": "4.5 Weight Decay",
+      "d2l_url": "https://zh-v2.d2l.ai/chapter_multilayer-perceptrons/weight-decay.html",
+      "boundary": "说清「罚大权重」和「每步把权重乘个小于 1 的数」是同一件事",
+      "common_gaps": ["只会背「加了 L2 就是权重衰减」", "推不出「乘以 (1 - ηλ)」这一步", "把正则化对训练损失的修正与对梯度的影响说不清"],
+      "jargon_watchlist": ["正则项", "梯度下降", "权重衰减"],
+      "track": "base"
+    },
+    {
+      "code": "C-05",
+      "title": "Dropout 训练与推理时的差异",
+      "d2l_ref_zh": "4.6 暂退法（Dropout）",
+      "d2l_ref_en": "4.6 Dropout",
+      "d2l_url": "https://zh-v2.d2l.ai/chapter_multilayer-perceptrons/dropout.html",
+      "boundary": "说清为什么推理时不丢弃，以及为什么要乘回概率",
+      "common_gaps": ["把「推理时不丢弃」解释成「为了结果稳定」而不是「期望一致」", "不知道缩放因子该乘在哪一侧才对", "把 dropout 与正则化项的机制混为一谈"],
+      "jargon_watchlist": ["期望", "缩放", "暂退法"],
+      "track": "arch"
+    },
+    {
+      "code": "C-06",
+      "title": "反向传播为什么要存中间值",
+      "d2l_ref_zh": "4.7 前向传播、反向传播和计算图",
+      "d2l_ref_en": "4.7 Forward/Backward Propagation and Computational Graphs",
+      "d2l_url": "https://zh-v2.d2l.ai/chapter_multilayer-perceptrons/backprop.html",
+      "boundary": "说清计算图里哪些值必须留着，不留会怎样",
+      "common_gaps": ["说「因为要用」而讲不出用在哪一步", "分不清正反向传播各自的输入输出", "把内存占用与计算量当作一回事"],
+      "jargon_watchlist": ["计算图", "链式法则", "反向传播"],
+      "track": "base"
+    },
+    {
+      "code": "C-07",
+      "title": "初始化的尺度为什么重要",
+      "d2l_ref_zh": "4.8 数值稳定性和模型初始化",
+      "d2l_ref_en": "4.8 Numerical Stability and Initialization",
+      "d2l_url": "https://zh-v2.d2l.ai/chapter_multilayer-perceptrons/numerical-stability-and-init.html",
+      "boundary": "说清「初始化太大/太小」分别会发生什么，用方差传递解释",
+      "common_gaps": ["只会说「不能全零」这一个结论", "讲不出为什么方差要在层间保持", "把梯度爆炸与梯度消失当成两个独立现象"],
+      "jargon_watchlist": ["方差", "梯度消失", "梯度爆炸"],
+      "track": "optimize"
+    },
+    {
+      "code": "C-08",
+      "title": "分布偏移为什么让模型失效",
+      "d2l_ref_zh": "4.9 环境和分布偏移",
+      "d2l_ref_en": "4.9 Environment and Distribution Shift",
+      "d2l_url": "https://zh-v2.d2l.ai/chapter_multilayer-perceptrons/environment.html",
+      "boundary": "举一个自己项目里可能遇到的偏移例子",
+      "common_gaps": ["举不出自己的例子，只能复述教材案例", "把数据漂移与概念漂移混用", "误以为更大的测试集能解决偏移"],
+      "jargon_watchlist": ["协变量偏移", "概念漂移", "分布偏移"],
+      "track": "application"
+    },
+    {
+      "code": "C-09",
+      "title": "卷积为什么能大幅减少参数",
+      "d2l_ref_zh": "6.1 从全连接层到卷积",
+      "d2l_ref_en": "6.1 From Fully Connected Layers to Convolutions",
+      "d2l_url": "https://zh-v2.d2l.ai/chapter_convolutional-neural-networks/why-conv.html",
+      "boundary": "用具体数字算出全连接与卷积的参数差，并说清换来了什么代价",
+      "common_gaps": ["算不对参数量（漏掉通道维度）", "把参数共享与稀疏连接当成同一件事", "说不出换来的代价（如平移不变性假设被打破时失效）"],
+      "jargon_watchlist": ["参数共享", "平移不变", "局部性"],
+      "track": "arch"
+    },
+    {
+      "code": "C-10",
+      "title": "填充与步幅如何决定输出尺寸",
+      "d2l_ref_zh": "6.3 填充和步幅",
+      "d2l_ref_en": "6.3 Padding and Stride",
+      "d2l_url": "https://zh-v2.d2l.ai/chapter_convolutional-neural-networks/padding-and-strides.html",
+      "boundary": "能当场推出公式，并用三个例子验证",
+      "common_gaps": ["公式记成 (H - K + 1) / S 而漏掉填充项", "不知道「same padding」需要什么条件", "算不出奇数核下的对称填充"],
+      "jargon_watchlist": ["感受野", "步幅", "填充"],
+      "track": "arch"
+    },
+    {
+      "code": "C-11",
+      "title": "汇聚层为什么带来平移鲁棒性",
+      "d2l_ref_zh": "6.5 汇聚层",
+      "d2l_ref_en": "6.5 Pooling",
+      "d2l_url": "https://zh-v2.d2l.ai/chapter_convolutional-neural-networks/pooling.html",
+      "boundary": "说清「池化丢掉了什么」，以及这个丢失为什么可以接受",
+      "common_gaps": ["只说「降维」而说不出丢掉的是位置精度", "认为池化一定优于步幅卷积", "把最大池化与平均池化的选择当成经验"],
+      "jargon_watchlist": ["下采样", "不变性", "汇聚层"],
+      "track": "arch"
+    },
+    {
+      "code": "C-12",
+      "title": "批量规范化在训练与推理时的差异",
+      "d2l_ref_zh": "7.5 批量规范化",
+      "d2l_ref_en": "7.5 Batch Normalization",
+      "d2l_url": "https://zh-v2.d2l.ai/chapter_convolutional-modern/batch-norm.html",
+      "boundary": "说清训练用批统计量、推理用全局统计量的原因",
+      "common_gaps": ["说「推理时没有批」这种表面理由", "讲不出 running statistics 是如何累积的", "不知道贝塞尔校正为何出现在这里"],
+      "jargon_watchlist": ["均值", "方差", "running statistics", "批量规范化"],
+      "track": "arch"
+    },
+    {
+      "code": "C-13",
+      "title": "残差连接为什么更好训练",
+      "d2l_ref_zh": "7.6 残差网络（ResNet）",
+      "d2l_ref_en": "7.6 Residual Networks (ResNet) and ResNeXt",
+      "d2l_url": "https://zh-v2.d2l.ai/chapter_convolutional-modern/resnet.html",
+      "boundary": "说清梯度在残差路径上的传递，以及「学残差」比「学映射」容易在哪",
+      "common_gaps": ["只说「梯度可以直传」而讲不出为什么这解决了退化", "把退化问题与梯度消失混为一谈", "说不出为何恒等映射是基准点"],
+      "jargon_watchlist": ["恒等映射", "梯度", "残差"],
+      "track": "arch"
+    },
+    {
+      "code": "C-14",
+      "title": "学习率与批大小的关系",
+      "d2l_ref_zh": "11.3 梯度下降 / 11.5 小批量随机梯度下降",
+      "d2l_ref_en": "11.3 Gradient Descent / 11.5 Minibatch Stochastic Gradient Descent",
+      "d2l_url": "https://zh-v2.d2l.ai/chapter_optimization/minibatch-sgd.html",
+      "boundary": "说清批大小变化时学习率该怎么变，为什么",
+      "common_gaps": ["只会背「批大学习率大」", "说不出梯度方差与批大小的关系", "把线性缩放规则当成本定理"],
+      "jargon_watchlist": ["随机梯度", "方差", "批大小"],
+      "track": "optimize"
+    },
+    {
+      "code": "C-15",
+      "title": "动量项在做什么",
+      "d2l_ref_zh": "11.6 动量法",
+      "d2l_ref_en": "11.6 Momentum",
+      "d2l_url": "https://zh-v2.d2l.ai/chapter_optimization/momentum.html",
+      "boundary": "用「小球下坡」解释还不够，要说清它在什么情况下失效",
+      "common_gaps": ["只会用小球类比，讲不出指数加权平均", "说不出病态曲率下的实际效果", "把动量与二阶方法混淆"],
+      "jargon_watchlist": ["指数加权", "动量", "病态曲率"],
+      "track": "optimize"
+    },
+    {
+      "code": "C-16",
+      "title": "Adam 的一阶与二阶矩",
+      "d2l_ref_zh": "11.10 Adam算法",
+      "d2l_ref_en": "11.10 Adam",
+      "d2l_url": "https://zh-v2.d2l.ai/chapter_optimization/adam.html",
+      "boundary": "说清分母那项在做什么，以及它什么时候会帮倒忙",
+      "common_gaps": ["只知道 Adam「收敛快」", "讲不出偏差修正为什么必要", "说不出在什么场景下 Adam 反而不如 SGD"],
+      "jargon_watchlist": ["矩估计", "偏差修正", "Adam"],
+      "track": "optimize"
+    },
+    {
+      "code": "C-17",
+      "title": "注意力到底在加权什么",
+      "d2l_ref_zh": "10.1 注意力提示 / 10.3 注意力评分函数",
+      "d2l_ref_en": "10.1 Attention Cues / 10.3 Attention Scoring Functions",
+      "d2l_url": "https://zh-v2.d2l.ai/chapter_attention-mechanisms/attention-scoring-functions.html",
+      "boundary": "说清 query/key/value 各自扮演的角色，用检索做类比",
+      "common_gaps": ["把 q/k/v 都当成同一类向量", "说不清为什么要除以 sqrt(d)", "把注意力权重与概率分布混为一谈"],
+      "jargon_watchlist": ["注意力权重", "软对齐", "query"],
+      "track": "application"
+    },
+    {
+      "code": "C-18",
+      "title": "多头注意力「多」在哪",
+      "d2l_ref_zh": "10.5 多头注意力",
+      "d2l_ref_en": "10.5 Multi-Head Attention",
+      "d2l_url": "https://zh-v2.d2l.ai/chapter_attention-mechanisms/multihead-attention.html",
+      "boundary": "说清多个头与单个大头的差别，以及为什么要有差别",
+      "common_gaps": ["以为多头等于把维度做大", "说不出子空间假设", "算不对多头下的参数量"],
+      "jargon_watchlist": ["子空间", "拼接", "多头注意力"],
+      "track": "application"
+    },
+    {
+      "code": "C-19",
+      "title": "位置编码为什么用正弦",
+      "d2l_ref_zh": "10.6 自注意力和位置编码",
+      "d2l_ref_en": "10.6 Self-Attention and Positional Encoding",
+      "d2l_url": "https://zh-v2.d2l.ai/chapter_attention-mechanisms/self-attention-and-positional-encoding.html",
+      "boundary": "说清不用位置编码会出什么问题，以及为什么选正弦而不是学一个",
+      "common_gaps": ["说不出自注意力的置换不变性", "讲不出正弦编码的相对位置性质", "误以为位置编码只是加了个特征"],
+      "jargon_watchlist": ["绝对位置", "相对位置", "位置编码"],
+      "track": "application"
+    },
+    {
+      "code": "C-20",
+      "title": "BERT 的预训练任务为什么用遮挡",
+      "d2l_ref_zh": "14.8 来自Transformers的双向编码器表示（BERT）",
+      "d2l_ref_en": "14.8 Bidirectional Encoder Representations from Transformers (BERT)",
+      "d2l_url": "https://zh-v2.d2l.ai/chapter_natural-language-processing-pretraining/bert.html",
+      "boundary": "说清「遮挡预测」与「预测下一个词」的区别，以及各自擅长什么",
+      "common_gaps": ["只说「双向信息更多」", "讲不出 [MASK] 在微调阶段不出现带来的不一致", "把 BERT 与 GPT 的差异简化为模型大小"],
+      "jargon_watchlist": ["掩码语言模型", "双向编码", "预训练"],
+      "track": "application"
+    }
+  ]
+}

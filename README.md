@@ -87,26 +87,57 @@ GET    /market/my/applied               我申请的任务
 GET    /market/stats                    市场统计
 ```
 
+## ★ 讲轨（v2.1 新增）：把「讲」做成一等交付物
+
+平台原本只能验证「你做出来了」，不能验证「你懂了」；而排行榜的最优策略（换权重 + 调参）
+恰恰是最不需要理解的一条路。讲轨补上缺失的那一半。
+
+五步闭环：**认领概念卡 → 回讲三件套 → 全员质询 → 助教裁定卡壳 → 重构第二版**。
+
+- 概念卡种子 20 条（附录 B），含 d2l 中英定位、**判定边界**（回讲是否到位的判定依据）、常见卡壳点、高危术语
+- 卡壳点面板：`/gaps.html`（教师端），回答「这周学生到底在哪里讲不通」，按概念卡排序给出下周讲课顺序
+- 当前范围：采集链路 + 只读视图。**不改变任何现有教学流程**，四维打分与两道闸门在迭代二
+
+```
+GET    /explain/concepts                概念卡列表（登录）
+POST   /explain/concepts                创建概念卡（管理员）
+POST   /explain/concepts/import         批量导入概念卡（管理员，按 code 幂等）
+GET    /explain/concepts/{id}           概念卡详情（含回讲与质询）
+POST   /explain/concepts/{id}/claim     认领（一卡一组，单语句原子抢占）
+POST   /explain/concepts/{id}/release   释放认领
+POST   /explain/claims                  提交回讲三件套
+GET    /explain/claims                  质询池（全班可见）
+POST   /explain/claims/{id}/challenge   提交质询（须为疑问句）
+POST   /explain/claims/{id}/revise      提交第二版（revision_diff 必填）
+POST   /explain/challenges/{id}/respond 讲解组回应
+POST   /explain/challenges/{id}/arbitrate 裁定卡壳点（教师）
+GET    /explain/gaps/summary            卡壳点聚合视图（教师）★
+GET    /explain/gaps                    卡壳点明细（教师）
+GET    /explain/me                      我的讲轨进度
+```
+
 ## 快速部署（Docker 一键启动）
 
 ```bash
 # 1. 克隆项目
 cd int305-arena
 
-# 2. 配置环境变量
+# 2. 配置环境变量（⚠️ 必须）
 cp .env.example .env
-# 编辑 .env 设置管理员密码等
+# 编辑 .env，至少填好 SECRET_KEY 与 ADMIN_PASSWORD：
+#   python -c "import secrets; print(secrets.token_urlsafe(48))"
+# 这两个值为空或仍是示例值时，应用会拒绝启动并给出提示。
 
 # 3. 一键启动
 docker-compose up -d
 
-# 4. 初始化数据库和管理员账号
+# 4. 初始化数据库、管理员账号与 20 条概念卡种子
 docker exec int305-api python scripts/init_db.py
 
 # 5. 访问
 # 前端: http://your-server
 # API:  http://your-server/api
-# 管理后台: http://your-server/admin
+# 讲轨卡壳点面板: http://your-server/gaps.html
 ```
 
 ## 手动部署（无 Docker）
@@ -116,7 +147,7 @@ docker exec int305-api python scripts/init_db.py
 cd backend
 pip install -r requirements.txt
 
-# 2. 初始化数据库
+# 2. 初始化数据库（含概念卡种子）
 python scripts/init_db.py
 
 # 3. 启动后端
@@ -125,6 +156,37 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000
 # 4. 用 Nginx 代理前端和 API
 # 参见 nginx.conf
 ```
+
+## 测试
+
+```bash
+cd backend
+pip install -r requirements-dev.txt
+./.venv/Scripts/python.exe -m pytest tests/ -q      # Windows
+# python -m pytest tests/ -q                        # Linux/macOS
+```
+
+真实服务器验收（起真 uvicorn、走真 HTTP）：
+
+```bash
+cd backend && ./.venv/Scripts/python.exe ../audit/verify_iter1.py
+```
+
+## 旧版本升级提示
+
+从 v2.0 升级到 v2.1 有两处**必须处理**的变更：
+
+1. **补上 `SECRET_KEY` / `ADMIN_PASSWORD`** —— 否则服务起不来（原来会静默用公开兜底值）。
+2. **迁移标准答案**：答案文件已改存 `ANSWERS_DIR`（默认 `data/answers`），
+   且 `datasets` / `uploads` 的无鉴权静态挂载已移除。存量实例执行：
+
+```bash
+cd backend
+python scripts/migrate_answers.py --dry-run   # 先看会动哪些文件
+python scripts/migrate_answers.py             # 实际迁移
+```
+
+已部署过的实例，**S1（答案可匿名下载）应按「已泄露」处理**：核对排行榜有无异常满分提交。
 
 ## 学生使用流程
 

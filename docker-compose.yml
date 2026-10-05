@@ -8,12 +8,18 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - SECRET_KEY=${SECRET_KEY:-change-me-in-production-2024}
+      # [审计补丁 S3] 用 `${VAR:?}` 强制要求显式提供：
+      # 旧写法 `${SECRET_KEY:-change-me-in-production-2024}` 会在忘记配置 .env 时
+      # 静默使用公开的兜底值，等于把管理员口令与 JWT 签名密钥写进了公开仓库。
+      # 现在缺失即报错退出，不给出不安全的默认值。
+      - SECRET_KEY=${SECRET_KEY:?请在 .env 中设置 SECRET_KEY（python -c "import secrets;print(secrets.token_urlsafe(48))"）}
       - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@xjtlu.edu.cn}
-      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:?请在 .env 中设置 ADMIN_PASSWORD（至少 8 字符）}
       - DATABASE_URL=sqlite:///./int305_arena.db
       - UPLOAD_DIR=./data/uploads
       - DATASET_DIR=./data/datasets
+      # 标准答案单独存放，不在任何可下载目录下
+      - ANSWERS_DIR=./data/answers
       - REQUIRE_APPROVAL=${REQUIRE_APPROVAL:-false}
       - FRONTEND_URL=http://localhost
     volumes:

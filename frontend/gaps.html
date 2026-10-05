@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>卡壳点面板 — INT305 讲轨</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-primary: #0a0e17;
+  --bg-secondary: #111827;
+  --bg-card: #1a2235;
+  --bg-elevated: #243049;
+  --accent-blue: #3b82f6;
+  --accent-cyan: #06b6d4;
+  --accent-purple: #8b5cf6;
+  --accent-green: #10b981;
+  --accent-orange: #f59e0b;
+  --accent-red: #ef4444;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --border: #1e293b;
+  --border-light: #334155;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg-primary);color:var(--text-primary);line-height:1.6;padding:2rem}
+a{color:var(--accent-blue);text-decoration:none}
+.mono{font-family:'JetBrains Mono',monospace}
+.wrap{max-width:1180px;margin:0 auto}
+header.top{display:flex;align-items:flex-end;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:1.75rem}
+h1{font-size:1.55rem;font-weight:800;letter-spacing:-.02em}
+h1 .sub{display:block;font-size:.85rem;font-weight:400;color:var(--text-muted);margin-top:.35rem;letter-spacing:0}
+.toolbar{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap}
+select,button{font-family:inherit;font-size:.82rem;padding:.45rem .8rem;border-radius:8px;border:1px solid var(--border-light);background:var(--bg-secondary);color:var(--text-primary);cursor:pointer}
+button.primary{background:var(--accent-blue);border-color:var(--accent-blue);color:#fff;font-weight:600}
+button.primary:hover{filter:brightness(1.1)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.85rem;margin-bottom:1.5rem}
+.kpi{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1rem 1.1rem}
+.kpi .n{font-size:1.9rem;font-weight:800;letter-spacing:-.03em;line-height:1.1}
+.kpi .l{font-size:.76rem;color:var(--text-muted);margin-top:.35rem;text-transform:uppercase;letter-spacing:.06em}
+.kpi.warn .n{color:var(--accent-orange)}
+.kpi.danger .n{color:var(--accent-red)}
+.kpi.ok .n{color:var(--accent-green)}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1.25rem}
+.card h2{font-size:1rem;font-weight:700;margin-bottom:.25rem}
+.card .hint{font-size:.8rem;color:var(--text-muted);margin-bottom:1rem}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{text-align:left;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);font-weight:600;padding:.5rem .6rem;border-bottom:1px solid var(--border)}
+td{padding:.6rem;border-bottom:1px solid var(--border);vertical-align:top}
+tr:last-child td{border-bottom:none}
+tr.rowclick{cursor:pointer}
+tr.rowclick:hover{background:var(--bg-elevated)}
+.bar{height:7px;border-radius:4px;background:var(--bg-elevated);overflow:hidden;min-width:60px}
+.bar>span{display:block;height:100%;background:var(--accent-blue);border-radius:4px}
+.bar.hot>span{background:var(--accent-orange)}
+.bar.crit>span{background:var(--accent-red)}
+.tag{display:inline-block;font-size:.7rem;padding:.15rem .45rem;border-radius:5px;background:var(--bg-elevated);color:var(--text-secondary);border:1px solid var(--border-light);margin-right:.25rem}
+.tag.base{color:#93c5fd}.tag.arch{color:#c4b5fd}.tag.optimize{color:#fcd34d}.tag.application{color:#6ee7b7}
+.tag.sev3{background:rgba(239,68,68,.15);color:#fca5a5;border-color:rgba(239,68,68,.35)}
+.tag.sev2{background:rgba(245,158,11,.15);color:#fcd34d;border-color:rgba(245,158,11,.3)}
+.tag.closed{background:rgba(16,185,129,.12);color:#6ee7b7;border-color:rgba(16,185,129,.3)}
+.rank{display:flex;gap:.85rem;align-items:flex-start;padding:.7rem .1rem;border-bottom:1px solid var(--border)}
+.rank:last-child{border-bottom:none}
+.rank .no{width:26px;height:26px;flex:0 0 26px;border-radius:7px;background:var(--bg-elevated);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;color:var(--text-secondary)}
+.rank .no.top1{background:rgba(239,68,68,.2);color:#fca5a5}
+.rank .no.top2{background:rgba(245,158,11,.2);color:#fcd34d}
+.rank .no.top3{background:rgba(59,130,246,.2);color:#93c5fd}
+.qlist{margin-top:.5rem;padding-left:.2rem;font-size:.82rem;color:var(--text-secondary)}
+.qlist li{margin:.25rem 0 .25rem 1.1rem}
+.qlist li::marker{color:var(--text-muted)}
+.bars{display:flex;flex-direction:column;gap:.5rem}
+.barrow{display:grid;grid-template-columns:96px 1fr 56px;align-items:center;gap:.6rem;font-size:.82rem}
+.weeks{display:flex;align-items:flex-end;gap:.5rem;height:120px;padding-top:.5rem}
+.weeks .w{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:.3rem;height:100%}
+.weeks .w i{display:block;width:100%;max-width:38px;background:linear-gradient(180deg,var(--accent-blue),#1d4ed8);border-radius:5px 5px 0 0;min-height:3px}
+.weeks .w b{font-size:.7rem;font-weight:600;color:var(--text-secondary)}
+.weeks .w small{font-size:.66rem;color:var(--text-muted)}
+.empty{color:var(--text-muted);font-size:.88rem;padding:1rem 0}
+.denied{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:2rem;text-align:center}
+.denied h2{font-size:1.1rem;margin-bottom:.5rem}
+.denied p{color:var(--text-secondary);font-size:.88rem;margin-bottom:1rem}
+code{font-family:'JetBrains Mono',monospace;font-size:.8rem;background:var(--bg-secondary);padding:.1rem .35rem;border-radius:4px;border:1px solid var(--border)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>卡壳点面板 · 讲轨
+      <span class="sub">这周学生到底在哪里讲不通 —— 下周课堂的讲课顺序就按这里排</span>
+    </h1>
+    <div class="toolbar">
+      <select id="f-track" onchange="load()">
+        <option value="">全部轨道</option>
+        <option value="base">base · 基础</option>
+        <option value="arch">arch · 架构</option>
+        <option value="optimize">optimize · 优化</option>
+        <option value="application">application · 应用</option>
+      </select>
+      <select id="f-sev" onchange="load()">
+        <option value="">全部严重度</option>
+        <option value="2">≥ 2 明显</option>
+        <option value="3">= 3 根本性</option>
+      </select>
+      <button class="primary" onclick="load()">刷新</button>
+      <a href="index.html" style="font-size:.82rem">← 返回平台</a>
+    </div>
+  </header>
+
+  <div id="stage"><div class="empty">加载中…</div></div>
+</div>
+
+<script>
+const API = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? 'http://localhost:8000/api' : '/api';
+const token = localStorage.getItem('int305_token');
+
+const TRACK_LABEL = { base:'基础', arch:'架构', optimize:'优化', application:'应用' };
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+// 后端返回的是无时区的 UTC 时间戳，可能带 6 位小数（部分浏览器解析不了），统一裁到毫秒
+const fmtTime = s => {
+  if (!s) return '-';
+  const t = Date.parse(String(s).replace(/\.(\d{3})\d*/, '.$1') + 'Z');
+  return isNaN(t) ? String(s) : new Date(t).toLocaleString('zh-CN');
+};
+
+async function api(path){
+  const res = await fetch(API + path, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+  if (!res.ok) {
+    let detail = `HTTP ${res.status}`;
+    try { detail = (await res.json()).detail || detail; } catch(e){}
+    throw Object.assign(new Error(detail), { status: res.status });
+  }
+  return res.json();
+}
+
+function denied(title, msg){
+  document.getElementById('stage').innerHTML =
+    `<div class="denied"><h2>${esc(title)}</h2><p>${esc(msg)}</p><a href="index.html">前往登录</a></div>`;
+}
+
+function barClass(n, max){
+  if (!max) return '';
+  const r = n / max;
+  return r > 0.66 ? 'crit' : (r > 0.33 ? 'hot' : '');
+}
+
+async function load(){
+  if (!token) return denied('需要登录', '请先在平台首页登录管理员账号。');
+  const track = document.getElementById('f-track').value;
+  const minSev = document.getElementById('f-sev').value;
+
+  try {
+    const qs = new URLSearchParams();
+    if (track) qs.set('track', track);
+    if (minSev) qs.set('min_severity', minSev);
+    const [sum, detail] = await Promise.all([
+      api('/explain/gaps/summary' + (qs.toString() ? '?' + qs : '')),
+      api('/explain/gaps' + (qs.toString() ? '?' + qs + '&' : '?') + 'limit=60'),
+    ]);
+    render(sum, detail);
+  } catch (e) {
+    if (e.status === 401) return denied('需要登录', '登录状态已过期，请重新登录。');
+    if (e.status === 403) return denied('需要教师权限', '卡壳点面板仅对管理员（教师）开放。');
+    document.getElementById('stage').innerHTML = `<div class="card"><div class="empty">加载失败：${esc(e.message)}</div></div>`;
+  }
+}
+
+function render(s, detail){
+  const maxGap = Math.max(1, ...s.by_concept.map(c => c.gap_count));
+  const maxSev = Math.max(1, ...s.by_severity.map(x => x.count));
+  const maxWeek = Math.max(1, ...s.by_week.map(x => x.gap_count));
+
+  const top5 = s.by_concept.filter(c => c.gap_count > 0).slice(0, 5);
+
+  const kpis = `
+    <div class="kpis">
+      <div class="kpi ${s.total_gaps ? 'danger' : 'ok'}"><div class="n">${s.total_gaps}</div><div class="l">已裁定卡壳点</div></div>
+      <div class="kpi ${s.open_gaps ? 'warn' : 'ok'}"><div class="n">${s.open_gaps}</div><div class="l">尚未关闭</div></div>
+      <div class="kpi"><div class="n">${s.concept_count_with_gaps}</div><div class="l">涉及概念卡</div></div>
+      <div class="kpi"><div class="n">${s.pending_challenges}</div><div class="l">待裁定质询</div></div>
+      <div class="kpi"><div class="n">${s.adjudicated_challenges}</div><div class="l">已裁定质询</div></div>
+    </div>`;
+
+  const rank = top5.length ? top5.map((c, i) => `
+    <div class="rank">
+      <div class="no ${i === 0 ? 'top1' : i === 1 ? 'top2' : i === 2 ? 'top3' : ''}">${i + 1}</div>
+      <div>
+        <div><code>${esc(c.code)}</code> <strong>${esc(c.title)}</strong>
+          <span class="tag ${esc(c.track)}">${esc(TRACK_LABEL[c.track] || c.track)}</span>
+          <span class="tag">${esc(c.d2l_ref_zh || '')}</span></div>
+        <div style="font-size:.8rem;color:var(--text-muted);margin-top:.25rem">
+          ${c.gap_count} 个卡壳点 · 平均严重度 ${c.avg_severity ?? '-'} · 未关闭 ${c.open_gap_count}</div>
+        ${c.sample_questions.length ? `<ul class="qlist">${c.sample_questions.map(q => `<li>${esc(q)}</li>`).join('')}</ul>` : ''}
+      </div>
+    </div>`).join('') : '<div class="empty">还没有被裁定为卡壳点的质询。等课堂质询跑起来后这里会自动填满。</div>';
+
+  const rows = s.by_concept.length ? s.by_concept.map(c => `
+    <tr class="rowclick" onclick="toggle('q-${c.concept_id}')">
+      <td class="mono">${esc(c.code)}</td>
+      <td>${esc(c.title)}<div style="font-size:.75rem;color:var(--text-muted)">${esc(c.d2l_ref_zh || '')}</div></td>
+      <td><span class="tag ${esc(c.track)}">${esc(TRACK_LABEL[c.track] || c.track)}</span></td>
+      <td style="min-width:130px">
+        <div style="display:flex;align-items:center;gap:.5rem">
+          <div class="bar ${barClass(c.gap_count, maxGap)}"><span style="width:${Math.round(c.gap_count / maxGap * 100)}%"></span></div>
+          <b style="font-size:.85rem">${c.gap_count}</b>
+        </div>
+      </td>
+      <td>${c.avg_severity ?? '-'} <span style="color:var(--text-muted);font-size:.75rem">/ 峰值 ${c.max_severity ?? '-'}</span></td>
+      <td>${c.open_gap_count > 0 ? `<span class="tag sev3">${c.open_gap_count} 未关闭</span>` : '<span class="tag closed">已关闭</span>'}</td>
+      <td>${c.challenge_count}</td>
+    </tr>
+    <tr id="q-${c.concept_id}" style="display:none"><td colspan="7" style="background:var(--bg-secondary)">
+      ${c.sample_questions.length ? `<ul class="qlist">${c.sample_questions.map(q => `<li>${esc(q)}</li>`).join('')}</ul>` : '<span class="empty">无问题样例</span>'}
+    </td></tr>`).join('') : '<tr><td colspan="7" class="empty">暂无数据</td></tr>';
+
+  const sevBars = s.by_severity.map(x => `
+    <div class="barrow">
+      <span><span class="tag ${x.severity === 3 ? 'sev3' : x.severity === 2 ? 'sev2' : ''}">${x.severity} 级</span></span>
+      <div class="bar ${x.severity === 3 ? 'crit' : x.severity === 2 ? 'hot' : ''}"><span style="width:${Math.round(x.count / maxSev * 100)}%"></span></div>
+      <span class="mono" style="text-align:right">${x.count}</span>
+    </div>`).join('');
+
+  const trackBars = s.by_track.length ? s.by_track.map(t => `
+    <div class="barrow">
+      <span>${esc(TRACK_LABEL[t.track] || t.track)}</span>
+      <div class="bar"><span style="width:${Math.round(t.gap_count / Math.max(1, s.by_track[0].gap_count) * 100)}%"></span></div>
+      <span class="mono" style="text-align:right">${t.gap_count}</span>
+    </div>`).join('') : '<div class="empty">无数据</div>';
+
+  const weeks = s.by_week.length ? s.by_week.map(w => `
+    <div class="w">
+      <b>${w.gap_count}</b>
+      <i style="height:${Math.round(w.gap_count / maxWeek * 100)}%"></i>
+      <small>${esc(w.week.replace(/^\d{4}-/, ''))}</small>
+    </div>`).join('') : '<div class="empty">无数据</div>';
+
+  const detailRows = detail.length ? detail.map(d => `
+    <tr>
+      <td class="mono">${esc(d.concept_code)}</td>
+      <td>${esc(d.question)}</td>
+      <td><span class="tag ${d.gap_severity === 3 ? 'sev3' : d.gap_severity === 2 ? 'sev2' : ''}">${d.gap_severity ?? '-'}</span></td>
+      <td>${d.gap_closed ? '<span class="tag closed">已关闭</span>' : '<span class="tag sev3">未关闭</span>'}</td>
+      <td style="color:var(--text-muted);font-size:.78rem">${esc(d.challenger_name || '')}</td>
+    </tr>`).join('') : '<tr><td colspan="5" class="empty">暂无明细</td></tr>';
+
+  document.getElementById('stage').innerHTML = `
+    ${kpis}
+
+    <div class="card">
+      <h2>下周讲课顺序</h2>
+      <div class="hint">按「卡壳点数 → 平均严重度」排序的前 5 张概念卡。这就是下周值得重讲的内容清单。</div>
+      ${rank}
+    </div>
+
+    <div class="card">
+      <h2>按概念卡聚合</h2>
+      <div class="hint">点击任意行展开该概念下的原问题。列依次为：卡壳点数 / 平均严重度 / 关闭状态 / 质询总数。</div>
+      <table>
+        <thead><tr><th>编号</th><th>概念</th><th>轨道</th><th>卡壳点数</th><th>严重度</th><th>状态</th><th>质询</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2>严重度分布</h2>
+      <div class="hint">1 = 轻微（表述不清）；2 = 明显（概念缺环）；3 = 根本性（前置知识缺口）。3 级占比高说明要回头补前置。</div>
+      <div class="bars">${sevBars}</div>
+    </div>
+
+    <div class="card">
+      <h2>轨道分布</h2>
+      <div class="hint">哪一类知识最讲不通，决定复习课的主力方向。</div>
+      <div class="bars">${trackBars}</div>
+    </div>
+
+    <div class="card">
+      <h2>按周趋势</h2>
+      <div class="hint">卡壳点数量随周次变化。持续攀升通常意味着新课前置没打牢。</div>
+      <div class="weeks">${weeks}</div>
+    </div>
+
+    <div class="card">
+      <h2>卡壳点明细</h2>
+      <div class="hint">逐条原问题，备课前看一遍就知道学生真正卡在哪句话上。生成时间：${esc(fmtTime(s.generated_at))}</div>
+      <table>
+        <thead><tr><th>概念</th><th>原问题</th><th>严重度</th><th>状态</th><th>提问者</th></tr></thead>
+        <tbody>${detailRows}</tbody>
+      </table>
+    </div>`;
+}
+
+function toggle(id){
+  const el = document.getElementById(id);
+  if (el) el.style.display = el.style.display === 'none' ? 'table-row' : 'none';
+}
+
+load();
+</script>
+</body>
+</html>

@@ -9,9 +9,10 @@ from typing import Optional
 from ..database import get_db
 from ..models import Competition, CompStatus, Submission, User, DailySubmissionCount
 from ..auth import get_current_user, require_approved
-from ..config import UPLOAD_DIR, DATASET_DIR, MAX_UPLOAD_SIZE_MB
+from ..config import UPLOAD_DIR, DATASET_DIR, MAX_UPLOAD_SIZE_MB, answer_path_for
 from ..evaluators.scorer import evaluate_submission, validate_prediction_format, EvaluationError
 from ..schemas import SubmissionResponse, SubmissionResult
+from ..security import UnsafeFilenameError, safe_filename, safe_join
 
 router = APIRouter(prefix="/submissions", tags=["提交"])
 
@@ -69,13 +70,28 @@ async def submit_prediction(
         )
 
     # 3. 保存预测文件
+    # [审计补丁 S2] 原实现 f"sub_{timestamp}_{prediction.filename}" 直接拼接客户端文件名，
+    # Windows 对 `..` 做词法折叠，`../` ×3 即逃出用户目录（实测可写到仓库根，等价任意文件写）。
+    # 现在：先安全净化文件名，再用 safe_join 断言落盘位置未越界。
     import aiofiles
+    try:
+        pred_name = safe_filename(prediction.filename)
+    except UnsafeFilenameError as e:
+        raise HTTPException(status_code=400, detail=f"预测文件名不合法：{e}")
+
     user_dir = UPLOAD_DIR / str(comp_id) / str(current_user.id)
     user_dir.mkdir(parents=True, exist_ok=True)
 
     timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
-    pred_filename = f"sub_{timestamp}_{prediction.filename}"
-    pred_path = user_dir / pred_filename
+    pred_filename = f"sub_{timestamp}_{pred_name}"
+    try:
+        pred_path = safe_join(user_dir, pred_filename)
+    except UnsafeFilenameError as e:
+        raise HTTPException(status_code=400, detail=f"非法存储路径：{e}")
+
+    # [审计补丁 S2] 大小检查必须在 read() 之前，否则超大文件会先被读进内存
+    if prediction.size is not None and prediction.size > MAX_UPLOAD_SIZE_MB * 1024 * 1024:
+        raise HTTPException(status_code=400, detail=f"文件大小超过限制 ({MAX_UPLOAD_SIZE_MB}MB)")
 
     content = await prediction.read()
     if len(content) > MAX_UPLOAD_SIZE_MB * 1024 * 1024:
@@ -87,15 +103,28 @@ async def submit_prediction(
     # 4. 保存代码文件（可选）
     code_path = None
     if code:
-        code_filename = f"code_{timestamp}_{code.filename}"
-        code_filepath = user_dir / code_filename
+        try:
+            code_name = safe_filename(code.filename)
+        except UnsafeFilenameError as e:
+            raise HTTPException(status_code=400, detail=f"代码文件名不合法：{e}")
+        code_filename = f"code_{timestamp}_{code_name}"
+        try:
+            code_filepath = safe_join(user_dir, code_filename)
+        except UnsafeFilenameError as e:
+            raise HTTPException(status_code=400, detail=f"非法存储路径：{e}")
+
+        if code.size is not None and code.size > MAX_UPLOAD_SIZE_MB * 1024 * 1024:
+            raise HTTPException(status_code=400, detail=f"代码文件超过限制 ({MAX_UPLOAD_SIZE_MB}MB)")
         code_content = await code.read()
+        if len(code_content) > MAX_UPLOAD_SIZE_MB * 1024 * 1024:
+            raise HTTPException(status_code=400, detail=f"代码文件超过限制 ({MAX_UPLOAD_SIZE_MB}MB)")
         async with aiofiles.open(code_filepath, "wb") as f:
             await f.write(code_content)
         code_path = str(code_filepath)
 
     # 5. 验证格式
-    answer_path = DATASET_DIR / str(comp_id) / "answer.csv"
+    # [审计补丁 S1] 答案文件已移出 DATASET_DIR，改由 config.answer_path_for 统一定位
+    answer_path = answer_path_for(comp_id)
     if not answer_path.exists():
         raise HTTPException(status_code=500, detail="答案文件未配置，请联系管理员")
 

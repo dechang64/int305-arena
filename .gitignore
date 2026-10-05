@@ -7,3 +7,12 @@ data/
 .venv/
 node_modules/
 .DS_Store
+
+# 审计与验收产物整体不入库：
+# 探针脚本属可直接复用的利用代码，公开仓库不宜分发；
+# 整改依据（审计报告 / 实施报告）与最小复现脚本留本地备查。
+audit/
+
+# 测试产物
+.pytest_cache/
+backend/tests/.tmp/

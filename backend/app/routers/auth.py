@@ -47,7 +47,7 @@ def register(req: RegisterRequest, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(user)
 
-    token = create_access_token({"sub": user.id})
+    token = create_access_token({"sub": str(user.id)})  # [审计补丁 4/5] sub 必须是字符串
     return TokenResponse(
         access_token=token,
         user=UserBrief(
@@ -72,7 +72,7 @@ def login(req: LoginRequest, db: Session = Depends(get_db)):
     user.last_login = datetime.utcnow()
     db.commit()
 
-    token = create_access_token({"sub": user.id})
+    token = create_access_token({"sub": str(user.id)})  # [审计补丁 4/5] sub 必须是字符串
     return TokenResponse(
         access_token=token,
         user=UserBrief(

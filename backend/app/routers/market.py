@@ -1,6 +1,7 @@
 """任务市场路由 — 发布、浏览、申请、交付、验收、信用"""
 import json
 from datetime import datetime
+from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
@@ -508,7 +509,9 @@ def submit_delivery(
         code_url=delivery.code_url,
         demo_url=delivery.demo_url,
         documentation=delivery.documentation,
-        attachment=delivery.attachment,
+        # [审计补丁] 原先回传的是服务器绝对路径（泄露目录结构），改为只回文件名，
+        # 下载走鉴权接口 /api/uploads/deliveries/{task_id}/{filename}
+        attachment=Path(delivery.attachment).name if delivery.attachment else None,
         review_status=delivery.review_status,
         review_comment=delivery.review_comment,
         quality_score=delivery.quality_score,
@@ -541,18 +544,40 @@ async def upload_delivery_attachment(
         raise HTTPException(status_code=400, detail="请先提交交付物信息")
 
     # 保存文件
+    # [审计补丁 S2] 原实现 f"{current_user.id}_{file.filename}" 直接拼接客户端文件名，
+    # 实测 `../` ×7 可写到仓库根目录（可覆盖后端代码）。现在先净化再用 safe_join 断言。
+    from ..security import UnsafeFilenameError, safe_filename, safe_join
+    try:
+        name = safe_filename(file.filename)
+    except UnsafeFilenameError as e:
+        raise HTTPException(status_code=400, detail=f"附件名不合法：{e}")
+
+    from ..config import MAX_UPLOAD_SIZE_MB
+    if file.size is not None and file.size > MAX_UPLOAD_SIZE_MB * 1024 * 1024:
+        raise HTTPException(status_code=400, detail=f"附件超过限制 ({MAX_UPLOAD_SIZE_MB}MB)")
+
     task_dir = UPLOAD_DIR / "deliveries" / str(task_id)
     task_dir.mkdir(parents=True, exist_ok=True)
-    file_path = task_dir / f"{current_user.id}_{file.filename}"
+    try:
+        file_path = safe_join(task_dir, f"{current_user.id}_{name}")
+    except UnsafeFilenameError as e:
+        raise HTTPException(status_code=400, detail=f"非法存储路径：{e}")
+
+    content = await file.read()
+    if len(content) > MAX_UPLOAD_SIZE_MB * 1024 * 1024:
+        raise HTTPException(status_code=400, detail=f"附件超过限制 ({MAX_UPLOAD_SIZE_MB}MB)")
 
     async with aiofiles.open(file_path, "wb") as f:
-        content = await file.read()
         await f.write(content)
 
     delivery.attachment = str(file_path)
     db.commit()
 
-    return {"filename": file.filename, "size": len(content)}
+    return {
+        "filename": file_path.name,
+        "size": len(content),
+        "download_url": f"/api/uploads/deliveries/{task_id}/{file_path.name}",
+    }
 
 
 @router.get("/tasks/{task_id}/deliveries", response_model=List[DeliveryResponse], summary="查看交付物列表")
@@ -583,7 +608,7 @@ def list_deliveries(
             code_url=d.code_url,
             demo_url=d.demo_url,
             documentation=d.documentation,
-            attachment=d.attachment,
+            attachment=Path(d.attachment).name if d.attachment else None,
             review_status=d.review_status,
             review_comment=d.review_comment,
             quality_score=d.quality_score,

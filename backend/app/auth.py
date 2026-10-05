@@ -39,9 +39,14 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     )
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id: int = payload.get("sub")
+        # [审计补丁 3/5] sub 在历史令牌里可能是 int（旧代码 create_access_token 传了
+        # user.id），而 python-jose 3.3.0 的 decode 会强制校验 sub 必须是字符串并抛
+        # JWTClaimsError: Subject must be a string。这里做一次容错转换，
+        # 兼容已签发的旧令牌。签发侧同步改为 str(user.id)。
+        user_id = payload.get("sub")
         if user_id is None:
             raise credentials_exception
+        user_id = int(user_id)
     except JWTError:
         raise credentials_exception
 

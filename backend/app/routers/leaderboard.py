@@ -8,6 +8,9 @@ from typing import List, Optional
 from ..database import get_db
 from ..models import Competition, Submission, User
 from ..schemas import LeaderboardEntry
+# [审计补丁 2/2] 本文件第 107 行使用了 get_current_user，但原先未导入，
+# 导致 import 阶段 NameError: name 'get_current_user' is not defined —— 服务起不来。
+from ..auth import get_current_user
 
 router = APIRouter(prefix="/leaderboard", tags=["排行榜"])
 

@@ -3,6 +3,10 @@ uvicorn[standard]==0.24.0
 sqlalchemy==2.0.23
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
+# [审计补丁 B3] bcrypt 必须锁在 4.x：bcrypt 5.x 移除了 passlib 1.7.4 依赖的
+# `bcrypt.__about__.__version__`，未锁版本时 pip 会装到 5.x，导致 hash_password()
+# 抛 AttributeError -> 注册/登录全部 500（Docker 构建同样中招）。
+bcrypt==4.0.1
 python-multipart==0.0.6
 pydantic==2.5.2
 pydantic-settings==2.1.0

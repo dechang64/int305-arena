@@ -463,6 +463,9 @@ a{color:var(--accent-blue);text-decoration:none}
   <div class="section">
     <div class="section-title">管理后台</div>
     <div class="section-sub">用户审核、竞赛管理、成绩导出</div>
+    <div style="margin-bottom:1.25rem">
+      <a class="btn btn-primary btn-sm" href="gaps.html" target="_blank"><i class="fas fa-diagram-project"></i> 打开卡壳点面板（讲轨）</a>
+    </div>
     <div class="admin-grid" id="admin-stats"></div>
 
     <div class="tabs" id="admin-tabs">
@@ -767,6 +770,22 @@ async function apiFetch(path, options = {}) {
   return res;
 }
 
+// 数据集下载：必须带 token，故走 fetch + Blob，而不是直接给 <a href>
+async function downloadDataset(compId, filename) {
+  if (!token) { toast('请先登录', 'error'); return; }
+  try {
+    const res = await fetch(`${API}/datasets/${compId}/${encodeURIComponent(filename)}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) { toast(`下载失败（HTTP ${res.status}）`, 'error'); return; }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename; document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(url);
+  } catch (e) { toast('下载失败：' + e.message, 'error'); }
+}
+
 // ===== Pages =====
 function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -884,8 +903,10 @@ async function showCompDetail(compId) {
 
   let datasetsHTML = '';
   if (comp.dataset_files && comp.dataset_files.length > 0) {
+    // 下载改为带 Authorization 头的 fetch（原 <a href> 无法携带 token，且旧静态挂载
+    // 已被移除 —— 现在 /api/datasets/* 是需要登录的白名单接口）
     datasetsHTML = `<div class="sidebar-card"><h4><i class="fas fa-database"></i> 数据集</h4><ul class="dataset-list">${
-      comp.dataset_files.map(f => `<li><a href="${API}/competitions/${comp.id}/datasets/${f}" target="_blank"><i class="fas fa-download"></i> ${f}</a></li>`).join('')
+      comp.dataset_files.map(f => `<li><a href="#" onclick="downloadDataset(${comp.id}, '${String(f).replace(/'/g, "\\'")}');return false;"><i class="fas fa-download"></i> ${f}</a></li>`).join('')
     }</ul></div>`;
   }
 
@@ -1503,7 +1524,7 @@ async function doPostTask() {
     resource_links: document.getElementById('task-links').value.trim().split('\n').filter(x => x) || null,
   };
   try {
-    const res = await apiFetch('/market/tasks', { method: 'POST', body: JSON.stringify(body) });
+    const res = await apiFetch('/market/tasks', { method: 'POST', body });
     if (!res.ok) { const d = await res.json(); throw new Error(d.detail || '发布失败'); }
     hideModal('post-task');
     toast('任务已提交，等待管理员审核', 'success');
@@ -1519,7 +1540,7 @@ async function doApplyTask() {
     proposed_approach: document.getElementById('apply-approach').value.trim() || null,
   };
   try {
-    const res = await apiFetch(`/market/tasks/${currentTaskId}/apply`, { method: 'POST', body: JSON.stringify(body) });
+    const res = await apiFetch(`/market/tasks/${currentTaskId}/apply`, { method: 'POST', body });
     if (!res.ok) { const d = await res.json(); throw new Error(d.detail || '申请失败'); }
     hideModal('apply-task');
     toast('申请已提交', 'success');
@@ -1539,7 +1560,7 @@ async function doDeliverTask() {
     return;
   }
   try {
-    const res = await apiFetch(`/market/tasks/${currentTaskId}/deliver`, { method: 'POST', body: JSON.stringify(body) });
+    const res = await apiFetch(`/market/tasks/${currentTaskId}/deliver`, { method: 'POST', body });
     if (!res.ok) { const d = await res.json(); throw new Error(d.detail || '提交失败'); }
     hideModal('deliver-task');
     toast('交付已提交', 'success');

@@ -332,3 +332,220 @@ class TaskReviewAction(BaseModel):
     """管理员审核任务"""
     action: str = Field(..., pattern=r"^(approve|reject)$")
     comment: Optional[str] = Field(None, description="审核意见")
+
+
+# ---------------------------------------------------------------------------
+# [审计补丁 1/2] Pydantic v2 前向引用修复
+# TokenResponse.user 用字符串前向引用 "UserBrief"，而 UserBrief 定义在其后。
+# 单文件内 pydantic 会延迟到首次解析时自行处理，但 FastAPI 0.104 把模型当
+# response_model 时会用自身内部命名空间解析前向引用，导致
+# pydantic.errors.PydanticUndefinedAnnotation: name 'UserBrief' is not defined
+# —— 表现为 uvicorn 导入阶段直接崩溃，服务完全起不来。
+# 最小复现：在单文件之外 import app 即触发；修复即显式重建一次。
+# ---------------------------------------------------------------------------
+TokenResponse.model_rebuild()
+
+
+# ===========================================================================
+# 讲轨（Explain Track）—— 见 models.py 中同名区块的说明
+# ===========================================================================
+
+class ConceptCreate(BaseModel):
+    """创建概念卡（教师/管理员）"""
+    code: str = Field(..., max_length=20, description="概念卡编号，如 C-12")
+    title: str = Field(..., min_length=2, max_length=200)
+    d2l_ref_zh: Optional[str] = Field(None, max_length=100, description="中文版定位，如「7.5 批量规范化」")
+    d2l_ref_en: Optional[str] = Field(None, max_length=100, description="英文版定位，如「8.5 Batch Normalization」")
+    d2l_url: Optional[str] = Field(None, max_length=500)
+    boundary: Optional[str] = Field(None, max_length=1000, description="判定边界：要讲清的最小命题")
+    common_gaps: Optional[List[str]] = Field(None, description="教师预标注的常见卡壳点")
+    jargon_watchlist: Optional[List[str]] = Field(None, description="高危术语清单")
+    track: str = Field("base", description="base/arch/optimize/application")
+
+
+class ConceptResponse(BaseModel):
+    id: int
+    code: str
+    title: str
+    d2l_ref_zh: Optional[str]
+    d2l_ref_en: Optional[str]
+    d2l_url: Optional[str]
+    boundary: Optional[str]
+    common_gaps: Optional[List[str]]
+    jargon_watchlist: Optional[List[str]]
+    track: str
+    claimed_by_group: Optional[str]
+    claimed_by_user_id: Optional[int]
+    status: str
+    created_at: datetime
+
+
+class ConceptBrief(BaseModel):
+    """概念卡简表（列表页用）"""
+    id: int
+    code: str
+    title: str
+    d2l_ref_zh: Optional[str]
+    track: str
+    status: str
+    claimed_by_group: Optional[str]
+    claim_count: int = 0
+    gap_count: int = 0
+
+
+class ConceptClaimRequest(BaseModel):
+    """认领概念卡"""
+    group_name: str = Field(..., min_length=1, max_length=100)
+
+
+class ClaimCreate(BaseModel):
+    """提交回讲三件套"""
+    concept_id: int
+    plain_text: str = Field(..., min_length=20, max_length=2000, description="白话稿（建议 150–250 字）")
+    analogy: Optional[str] = Field(None, max_length=1000, description="类比句")
+    counterexample: Optional[str] = Field(None, max_length=1000, description="反例卡")
+    group_name: Optional[str] = Field(None, max_length=100)
+
+
+class ClaimResponse(BaseModel):
+    id: int
+    concept_id: int
+    concept_code: Optional[str] = None
+    concept_title: Optional[str] = None
+    user_id: int
+    user_name: Optional[str] = None
+    group_name: Optional[str]
+    plain_text: str
+    analogy: Optional[str]
+    counterexample: Optional[str]
+    version: int
+    parent_id: Optional[int]
+    revision_diff: Optional[str]
+    gap_closed: bool
+    status: str
+    challenge_count: int = 0
+    gap_count: int = 0
+    created_at: datetime
+
+
+class ClaimRevise(BaseModel):
+    """提交第二版回讲"""
+    plain_text: str = Field(..., min_length=20, max_length=2000)
+    analogy: Optional[str] = Field(None, max_length=1000)
+    counterexample: Optional[str] = Field(None, max_length=1000)
+    revision_diff: str = Field(..., min_length=5, max_length=2000, description="必填：我第一版漏了什么")
+    gap_closed: bool = Field(False, description="第二版是否关闭了卡壳点")
+
+
+class ChallengeCreate(BaseModel):
+    """提交质询"""
+    question: str = Field(..., min_length=5, max_length=500, description="必须是一个疑问句")
+
+
+class ChallengeRespond(BaseModel):
+    """讲解组回应质询"""
+    response: str = Field(..., min_length=2, max_length=2000)
+
+
+class ChallengeResponse(BaseModel):
+    id: int
+    claim_id: int
+    concept_code: Optional[str] = None
+    concept_title: Optional[str] = None
+    challenger_id: int
+    challenger_name: Optional[str] = None
+    question: str
+    uses_concept_term: bool
+    response: Optional[str]
+    is_gap: Optional[bool]
+    gap_severity: Optional[int]
+    arbiter_id: Optional[int]
+    created_at: datetime
+    responded_at: Optional[datetime]
+
+
+class ArbitrateRequest(BaseModel):
+    """助教/管理员裁定某条质询是否命中卡壳点"""
+    is_gap: bool
+    gap_severity: Optional[int] = Field(None, ge=1, le=3, description="1=轻微 2=明显 3=根本性")
+    comment: Optional[str] = Field(None, max_length=500)
+
+
+# --- 卡壳点聚合视图（教师端核心产物）---
+
+class GapConceptItem(BaseModel):
+    concept_id: int
+    code: str
+    title: str
+    d2l_ref_zh: Optional[str]
+    track: str
+    gap_count: int
+    adjudicated_count: int
+    avg_severity: Optional[float]
+    max_severity: Optional[int]
+    claim_count: int
+    challenge_count: int
+    open_gap_count: int
+    sample_questions: List[str]
+    last_gap_at: Optional[datetime]
+
+
+class GapSeverityBucket(BaseModel):
+    severity: int
+    count: int
+
+
+class GapTrackBucket(BaseModel):
+    track: str
+    gap_count: int
+    concept_count: int
+
+
+class GapWeekBucket(BaseModel):
+    week: str
+    gap_count: int
+
+
+class GapSummary(BaseModel):
+    """`GET /api/explain/gaps/summary` —— 这周学生到底在哪里讲不通。
+
+    这是讲轨机制里唯一不改变现有流程、却能立刻给出教学决策依据的产物：
+    老师下周只需要讲这里排名靠前的几张概念卡。
+    """
+    generated_at: datetime
+    total_gaps: int
+    adjudicated_challenges: int
+    pending_challenges: int
+    open_gaps: int
+    concept_count_with_gaps: int
+    by_concept: List[GapConceptItem]
+    by_severity: List[GapSeverityBucket]
+    by_track: List[GapTrackBucket]
+    by_week: List[GapWeekBucket]
+
+
+class GapDetailItem(BaseModel):
+    challenge_id: int
+    claim_id: int
+    concept_id: int
+    concept_code: str
+    concept_title: str
+    question: str
+    gap_severity: Optional[int]
+    is_gap: Optional[bool]
+    gap_closed: bool
+    challenger_name: Optional[str]
+    created_at: datetime
+
+
+class MyExplainResponse(BaseModel):
+    """我的讲轨进度"""
+    user_id: int
+    name: str
+    concepts_claimed: List[ConceptBrief]
+    claims_submitted: List[ClaimResponse]
+    challenges_raised: int
+    effective_challenges: int
+    gaps_flagged_on_me: int
+    explain_score: Optional[float]
+    challenge_credits: int

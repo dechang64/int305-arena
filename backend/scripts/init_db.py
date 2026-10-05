@@ -1,6 +1,7 @@
 """数据库初始化脚本 — 创建管理员账号和示例竞赛"""
 import sys
 import os
+import json  # [审计补丁 5/5] tags 需序列化后写入 Text 列
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.database import SessionLocal, create_tables
@@ -30,7 +31,8 @@ def init():
                 avatar_color="#ef4444"
             )
             db.add(admin)
-            print(f"✅ 管理员账号已创建: {ADMIN_EMAIL} / {ADMIN_PASSWORD}")
+            # 不把口令回显到日志/CI 输出里
+            print(f"✅ 管理员账号已创建: {ADMIN_EMAIL}")
         else:
             print(f"ℹ️  管理员账号已存在: {ADMIN_EMAIL}")
 
@@ -51,7 +53,7 @@ def init():
                 "end_time": datetime.utcnow() + timedelta(days=14),
                 "max_submissions_per_day": 5,
                 "max_submissions_total": 50,
-                "tags": ["回归", "线性模型", "正则化"]
+                "tags": json.dumps(["回归", "线性模型", "正则化"], ensure_ascii=False)
             },
             {
                 "slug": "comp2-image-classification",
@@ -68,7 +70,7 @@ def init():
                 "end_time": datetime.utcnow() + timedelta(days=28),
                 "max_submissions_per_day": 5,
                 "max_submissions_total": 50,
-                "tags": ["分类", "SVM", "多分类"]
+                "tags": json.dumps(["分类", "SVM", "多分类"], ensure_ascii=False)
             },
             {
                 "slug": "comp3-cifar10",
@@ -85,7 +87,7 @@ def init():
                 "end_time": datetime.utcnow() + timedelta(days=42),
                 "max_submissions_per_day": 5,
                 "max_submissions_total": 50,
-                "tags": ["CNN", "深度学习", "图像分类"]
+                "tags": json.dumps(["CNN", "深度学习", "图像分类"], ensure_ascii=False)
             },
             {
                 "slug": "comp4-ensemble",
@@ -102,7 +104,7 @@ def init():
                 "end_time": datetime.utcnow() + timedelta(days=56),
                 "max_submissions_per_day": 5,
                 "max_submissions_total": 50,
-                "tags": ["集成学习", "决策树", "Boosting"]
+                "tags": json.dumps(["集成学习", "决策树", "Boosting"], ensure_ascii=False)
             },
             {
                 "slug": "comp5-text-clustering",
@@ -119,7 +121,7 @@ def init():
                 "end_time": datetime.utcnow() + timedelta(days=70),
                 "max_submissions_per_day": 5,
                 "max_submissions_total": 50,
-                "tags": ["NLP", "聚类", "概率模型"]
+                "tags": json.dumps(["NLP", "聚类", "概率模型"], ensure_ascii=False)
             },
             {
                 "slug": "comp6-sequence-rl",
@@ -136,7 +138,7 @@ def init():
                 "end_time": datetime.utcnow() + timedelta(days=84),
                 "max_submissions_per_day": 5,
                 "max_submissions_total": 50,
-                "tags": ["RNN", "强化学习", "序列预测"]
+                "tags": json.dumps(["RNN", "强化学习", "序列预测"], ensure_ascii=False)
             }
         ]
 
@@ -151,7 +153,16 @@ def init():
 
         db.commit()
         print("\n🎉 初始化完成！")
-        print(f"\n📧 管理员登录: {ADMIN_EMAIL} / {ADMIN_PASSWORD}")
+
+        # 讲轨概念卡种子（《教学重构方案》附录 B 的 20 条）
+        try:
+            from seed_concepts import seed as seed_concepts
+            print()
+            seed_concepts()
+        except Exception as e:  # 概念卡导入失败不应阻断基础初始化
+            print(f"⚠️  概念卡种子导入跳过: {e}")
+
+        print(f"\n📧 管理员登录: {ADMIN_EMAIL} / {'*' * len(ADMIN_PASSWORD)}（见 .env）")
         print(f"🔗 API 文档: http://localhost:8000/api/docs")
 
     except Exception as e:
